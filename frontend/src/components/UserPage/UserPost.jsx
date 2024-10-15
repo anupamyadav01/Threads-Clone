@@ -1,105 +1,61 @@
-/* eslint-disable react/prop-types */
+/* eslint-disable react/no-unescaped-entities */
 import {
-  Box,
   Avatar,
-  Text,
+  Box,
   Flex,
-  IconButton,
-  Grid,
   Image,
-  HStack,
+  Text,
   VStack,
-  Spacer,
+  IconButton,
+  useColorMode,
 } from "@chakra-ui/react";
-import { FaHeart, FaComment, FaShare } from "react-icons/fa";
-import { AiOutlineHeart } from "react-icons/ai";
-import { useState } from "react";
+import { BsThreeDots } from "react-icons/bs";
+import { Link } from "react-router-dom";
+import Actions from "./Actions";
 
-const UserPost = ({ user }) => {
-  const [liked, setLiked] = useState(false);
-  const toggleLike = () => setLiked(!liked);
+const UserPost = () => {
+  const { colorMode } = useColorMode();
+
+  // const handleReply = () => {};
 
   return (
-    <Box
-      bg="gray.800"
-      borderRadius="lg"
-      p={4}
-      mb={6}
-      w="100%"
-      maxW="600px"
-      shadow="md"
-    >
-      {/* Post Header */}
-      <Flex alignItems="center" justifyContent="space-between">
-        <HStack spacing={3}>
-          <Avatar size="md" src={"/zuck-avatar.png"} name="zuck" />
-          <VStack align="start" spacing={0}>
-            <Text fontWeight="bold" color="white">
-              zuck
-            </Text>
-            <Text fontSize="sm" color="gray.400">
-              {/* {user.timestamp} */}
-              12s
-            </Text>
-          </VStack>
-        </HStack>
-        <IconButton
-          aria-label="More options"
-          icon={<Text fontSize="2xl">•••</Text>}
-          variant="ghost"
-          colorScheme="gray"
-        />
+    <Link to={"/anupamyadav01/post/1"}>
+      <Flex
+        paddingY={5}
+        borderBottom={"1px solid"}
+        borderColor={colorMode === "dark" ? "gray.600" : "gray.300"}
+        maxW="100%"
+        bg={colorMode === "dark" ? "gray.800" : "white"}
+        align="start"
+      >
+        <Avatar size="md" src="/zuck-avatar.png" name="Salome Munoz" mr={4} />
+
+        <VStack align="start" w="100%" spacing={4}>
+          <Flex justify="space-between" w="100%" align="center">
+            <Box>
+              <Text fontWeight="bold">Salome Munoz</Text>
+              <Text fontSize="sm" color="gray.500" marginLeft={-5}>
+                10 minutes ago
+              </Text>
+            </Box>
+            <IconButton
+              icon={<BsThreeDots />}
+              aria-label="Options"
+              variant="ghost"
+              size="sm"
+            />
+          </Flex>
+
+          <Text textAlign={"start"}>
+            After resting Babar Azam, PCB called Ahmad Shehzad and said we still
+            don't need you. 😭😔
+          </Text>
+
+          <Image src="/post3.png" alt="post" borderRadius="md" />
+          <Actions />
+        </VStack>
       </Flex>
-
-      {/* Post Images */}
-      <Grid templateColumns="repeat(3, 1fr)" gap={2} mt={4}>
-        <Image
-          src={"/post1.png"}
-          borderRadius="md"
-          objectFit="cover"
-          w="100%"
-          h="100%"
-        />
-      </Grid>
-
-      {/* Post Actions */}
-      <HStack justifyContent="space-between" mt={4}>
-        <HStack spacing={6}>
-          <IconButton
-            aria-label="Like"
-            icon={liked ? <FaHeart color="red" /> : <AiOutlineHeart />}
-            onClick={toggleLike}
-            variant="ghost"
-            fontSize="xl"
-          />
-          <IconButton
-            aria-label="Comment"
-            icon={<FaComment />}
-            variant="ghost"
-            fontSize="xl"
-          />
-          <IconButton
-            aria-label="Share"
-            icon={<FaShare />}
-            variant="ghost"
-            fontSize="xl"
-          />
-        </HStack>
-        <Spacer />
-        {/* Like, Comment and Share Count */}
-        <HStack spacing={4}>
-          <Text fontSize="sm" color="gray.400">
-            941
-          </Text>
-          <Text fontSize="sm" color="gray.400">
-            17
-          </Text>
-          <Text fontSize="sm" color="gray.400">
-            18
-          </Text>
-        </HStack>
-      </HStack>
-    </Box>
+    </Link>
   );
 };
 

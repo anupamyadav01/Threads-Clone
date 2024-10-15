@@ -22,14 +22,13 @@ const Header = ({ currentPage }) => {
       {/* Header */}
       <Flex
         zIndex={100}
-        position="fixed"
+        position="sticky"
         w={"100%"}
         justifyContent="space-between"
         alignItems="center"
         bg={colorMode === "dark" ? "gray.800" : "white"}
         px={6}
         py={4}
-        shadow="sm"
       >
         {/* Left - Logo */}
         <Image
@@ -57,7 +56,7 @@ const Header = ({ currentPage }) => {
       {/* Sidebar */}
       <VStack
         zIndex={10}
-        position="fixed"
+        position={"fixed"}
         left={0}
         top={0}
         justifyContent={"center"}

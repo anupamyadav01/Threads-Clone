@@ -1,11 +1,9 @@
-import UserPageHeader from "../../components/UserPage/UserPageHeader";
-import UserPost from "../../components/UserPage/UserPost";
+import Profile from "../../components/UserPage/Profile";
 
 const UserPage = () => {
   return (
     <div>
-      <UserPageHeader />
-      <UserPost />
+      <Profile />
     </div>
   );
 };

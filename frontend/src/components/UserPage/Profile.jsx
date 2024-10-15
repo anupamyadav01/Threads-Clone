@@ -17,14 +17,15 @@ import {
   MenuList,
   MenuItem,
   useToast,
+  useColorMode,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
-import { GoArrowLeft } from "react-icons/go";
-import { RxDotsHorizontal } from "react-icons/rx";
 import { PiDotsThreeCircleLight } from "react-icons/pi";
 import { FaCopy } from "react-icons/fa6";
+import UserPost from "./UserPost";
 
-const UserPageHeader = () => {
+const Profile = () => {
   const toast = useToast();
   const copyUserURL = () => {
     navigator.clipboard.writeText(window.location.href).then(() => {
@@ -37,52 +38,19 @@ const UserPageHeader = () => {
     });
   };
   const { username } = useParams();
-
+  const { colorMode } = useColorMode();
+  const activeColor = "white"; // Color for the active tab
+  const inactiveColor = useColorModeValue("gray.500", "gray.400"); // Dim color for inactive tabs
+  const activeBorderColor = "white"; // Border color for active tab
   return (
-    <VStack spacing={4} align="stretch">
-      {/* Header Section */}
-      {username && (
-        <Flex
-          zIndex={200}
-          justifyContent="space-between"
-          alignItems={"center"}
-          p={4}
-          bg={"gray.800"}
-          borderRadius="lg"
-          w="100%"
-          position="relative"
-        >
-          {/* Left - Back button */}
-          <IconButton
-            aria-label="Home"
-            icon={<GoArrowLeft />}
-            variant="ghost"
-            fontSize="22px"
-          />
-
-          {/* Center - Username */}
-          <Text fontWeight="bold" fontSize="lg">
-            {username}
-          </Text>
-
-          {/* Right - Menu Icon */}
-          <IconButton
-            aria-label="Home"
-            icon={<RxDotsHorizontal />}
-            variant="ghost"
-            fontSize="22px"
-          />
-        </Flex>
-      )}
-
-      {/* User Info */}
+    <VStack spacing={4}>
       <Flex
         justifyContent="space-between"
         alignItems="center"
         p={4}
         w="100%"
         borderRadius={"3xl"}
-        bg={"#273042"}
+        bg={colorMode === "dark" ? "gray.800" : "white"}
       >
         {/* Left - User info */}
         <VStack align="flex-start" spacing={0}>
@@ -90,7 +58,7 @@ const UserPageHeader = () => {
             Salome Munoz
           </Text>
           <Text pb={4}>@{username}</Text>
-          <Text pb={4}>one of a kind</Text>
+          <Text pb={4}>CEO of Facebook</Text>
           <Flex fontSize="sm" color="gray.400">
             <Text>525K followers</Text>
             <Text>525K followers</Text>
@@ -119,7 +87,7 @@ const UserPageHeader = () => {
           </Menu>
         </Flex>
       </Flex>
-
+      px={6}
       {/* Action Buttons */}
       <HStack justifyContent="space-between" p={4} w="100%">
         <Button variant="outline" w="48%">
@@ -129,26 +97,63 @@ const UserPageHeader = () => {
           Mention
         </Button>
       </HStack>
-
       <Divider />
-
-      {/* Tabs for Threads, Replies, Mentions */}
-      <Tabs variant="soft-rounded" align="center" colorScheme="blue">
-        <TabList>
-          <Tab>Threads</Tab>
-          <Tab>Replies</Tab>
-          <Tab>Reposts</Tab>
+      <Tabs variant="unstyled" align="center" w="100%">
+        <TabList
+          justifyContent="space-around"
+          borderBottom="1px solid"
+          borderColor="gray.300"
+        >
+          <Tab
+            _selected={{
+              color: activeColor,
+              borderBottom: "1px solid",
+              borderColor: activeBorderColor,
+            }}
+            color={inactiveColor}
+            fontWeight="bold"
+            px={6} /* Add padding for better visual balance */
+          >
+            Threads
+          </Tab>
+          <Tab
+            _selected={{
+              color: activeColor,
+              borderBottom: "1px solid",
+              borderColor: activeBorderColor,
+            }}
+            color={inactiveColor}
+            fontWeight="bold"
+            px={6}
+          >
+            Replies
+          </Tab>
+          <Tab
+            _selected={{
+              color: activeColor,
+              borderBottom: "1px solid",
+              borderColor: activeBorderColor,
+            }}
+            color={inactiveColor}
+            fontWeight="bold"
+          >
+            Reposts
+          </Tab>
         </TabList>
 
         <TabPanels>
           <TabPanel>
-            <p>Threads content goes here...</p>
+            <UserPost />
+
+            <UserPost />
+            <UserPost />
+            <UserPost />
           </TabPanel>
           <TabPanel>
-            <p>Replies content goes here...</p>
+            <p>Replies</p>
           </TabPanel>
           <TabPanel>
-            <p>Reposts content goes here...</p>
+            <p>Reposts</p>
           </TabPanel>
         </TabPanels>
       </Tabs>
@@ -156,4 +161,4 @@ const UserPageHeader = () => {
   );
 };
 
-export default UserPageHeader;
+export default Profile;
