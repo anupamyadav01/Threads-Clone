@@ -9,23 +9,17 @@ export const signup = async (req, res) => {
   try {
     const { name, email, password, username } = req.body.inputs;
     if (!name || !email || !password || !username) {
-      return res
-        .status(400)
-        .json({ sucess: false, message: "Please enter all fields" });
+      return res.status(400).json({ message: "Please enter all fields" });
     }
     // checking if user already exists
     const isEmailExist = await UserModel.findOne({ email });
     if (isEmailExist) {
-      return res
-        .status(400)
-        .json({ sucess: false, message: "User already exists" });
+      return res.status(400).json({ message: "User already exists" });
     }
 
     const isUsernameExist = await UserModel.findOne({ username });
     if (isUsernameExist) {
-      return res
-        .status(400)
-        .json({ sucess: false, message: "Username already exists" });
+      return res.status(400).json({ message: "Username already exists" });
     }
 
     const saltRounds = 10;
@@ -40,19 +34,17 @@ export const signup = async (req, res) => {
 
     if (newlyCreatedUser) {
       return res.status(201).json({
-        sucess: true,
         message: "User created successfully",
         user: newlyCreatedUser,
       });
     } else {
       return res
         .status(500)
-        .json({ sucess: false, message: "Failed to create user, try again" });
+        .json({ message: "Failed to create user, try again" });
     }
   } catch (error) {
     console.log("Error in Register User", error.message);
     return res.status(500).json({
-      sucess: false,
       message: "Failed to create user, try again",
       error: error.message,
     });
@@ -77,7 +69,7 @@ export const login = async (req, res) => {
 
     // user not found
     if (!existingUser) {
-      return res.status(400).json({ sucess: false, message: "User Not Found" });
+      return res.status(400).json({ message: "User Not Found" });
     }
 
     // checking if password is correct or not
@@ -88,14 +80,13 @@ export const login = async (req, res) => {
     if (!isPasswordCorrect) {
       return res
         .status(400)
-        .json({ sucess: false, message: "Password is Incorrect, try again" });
+        .json({ message: "Password is Incorrect, try again" });
     }
 
     // if password is correct, create JWT token and // store token in cookie
     generateTokenAndSetCookie(existingUser._id, res);
 
     return res.status(200).json({
-      sucess: true,
       message: "User Logged in Successfully.",
       user: existingUser,
     });
@@ -103,7 +94,6 @@ export const login = async (req, res) => {
     console.log("Error in Login", error.message);
 
     return res.status(500).json({
-      sucess: false,
       message: "Internal server error",
       error: error.message,
     });
@@ -114,7 +104,6 @@ export const checkLoggedIn = async (req, res) => {
   try {
     const user = req.user;
     return res.status(200).json({
-      sucess: true,
       role: user.role,
       user,
     });
@@ -122,7 +111,6 @@ export const checkLoggedIn = async (req, res) => {
     console.log("Error from Checklogged In", error);
 
     return res.status(500).json({
-      sucess: false,
       message: "Something went wrong, please try again later.",
     });
   }
@@ -247,7 +235,6 @@ export const resetPassword = async (req, res) => {
     );
     if (checkUser) {
       res.status(201).send({
-        sucess: true,
         message: "Password Updated Sucessfully.",
       });
     }
@@ -385,6 +372,7 @@ export const followUnFollowUser = async (req, res) => {
 export const updateUserProfile = async (req, res) => {
   // if we are here that means user is logged in and has a valid token and we can update user profile
   const currentUser = req.user;
+  const cloudinaryURL = req.secure_url;
   const { name, username, bio, password, profilePic } = req.body;
   try {
     if (currentUser._id.toString() !== req.params.userId) {
@@ -402,7 +390,7 @@ export const updateUserProfile = async (req, res) => {
     currentUser.name = name || currentUser.name;
     currentUser.username = username || currentUser.username;
     currentUser.bio = bio || currentUser.bio;
-    currentUser.profilePic = profilePic || currentUser.profilePic;
+    currentUser.profilePic = cloudinaryURL || currentUser.profilePic;
 
     const updatedUserProfile = await currentUser.save();
     if (updateUserProfile) {

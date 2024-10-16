@@ -7,15 +7,22 @@ export const uploadToCloudniary = async (req, res, next) => {
     api_secret: process.env.CLOUDINARY_API_SECRET,
   });
 
+  const { profilePic } = req.body;
   try {
-    const result = await cloudinary.uploader.upload(req.file.path, {
+    if (req.user.profilePic) {
+      await cloudinary.uploader.destroy(
+        req.user.profilePic.split("/").pop().split(".")[0]
+      );
+    }
+    const result = await cloudinary.uploader.upload(profilePic, {
       folder: "threads-clone",
+      timeout: 60000,
     });
     console.log("Upload to Cloudniary Executed");
     req.secure_url = result.secure_url;
     next();
   } catch (error) {
-    console.log(error);
+    console.log("Error from uploadToCloudniary", error);
     res.status(500).json({
       success: false,
       message: "Unable to upload image, please try again later.",

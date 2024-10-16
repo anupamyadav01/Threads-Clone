@@ -14,6 +14,7 @@ import {
   verifyOTP,
 } from "../controllers/userController.js";
 import getUserDetails from "../middlewares/getUserDetailsM.js";
+import { uploadToCloudniary } from "../middlewares/cloudniaryUpload.js";
 
 export const userRoutes = express.Router();
 
@@ -28,7 +29,12 @@ userRoutes.post("/reset-password", resetPassword);
 
 userRoutes.get("/profile/:query", getUserProfile);
 userRoutes.post("/follow/:queryId", getUserDetails, followUnFollowUser);
-userRoutes.put("/update/:userId", getUserDetails, updateUserProfile);
+userRoutes.put(
+  "/update/:userId",
+  getUserDetails,
+  uploadToCloudniary,
+  updateUserProfile
+);
 
 // userRoutes.get("/suggested", protectRoute, getSuggestedUsers);
 // userRoutes.put("/freeze", protectRoute, freezeAccount);
