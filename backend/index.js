@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import { userRoutes } from "./routes/userRoutes.js";
 import connectToMongoDB from "./services/connectToMongoDB.js";
+import postRoutes from "./routes/postRoutes.js";
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use("/api/user", userRoutes);
+app.use("/api/post", postRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server started on port ${process.env.PORT}`);
