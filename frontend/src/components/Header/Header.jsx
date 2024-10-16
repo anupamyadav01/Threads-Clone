@@ -13,10 +13,13 @@ import { GoHeart, GoHomeFill } from "react-icons/go";
 import { IoAddOutline } from "react-icons/io5";
 import { IoSearchOutline } from "react-icons/io5";
 import { FaRegUser } from "react-icons/fa6";
+import LogoutButton from "../Auth/LogoutButton";
+import { useRecoilValue } from "recoil";
+import userAtom from "../../atoms/userAtom";
 
 const Header = ({ currentPage }) => {
   const { colorMode, toggleColorMode } = useColorMode();
-
+  const user = useRecoilValue(userAtom);
   return (
     <Box>
       {/* Header */}
@@ -97,6 +100,7 @@ const Header = ({ currentPage }) => {
           fontSize="25px"
         />
       </VStack>
+      {user && <LogoutButton />}
     </Box>
   );
 };

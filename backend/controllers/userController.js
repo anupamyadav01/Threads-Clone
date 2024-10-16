@@ -7,7 +7,7 @@ import mongoose, { Mongoose } from "mongoose";
 
 export const signup = async (req, res) => {
   try {
-    const { name, email, password, username } = req.body;
+    const { name, email, password, username } = req.body.inputs;
     if (!name || !email || !password || !username) {
       return res
         .status(400)
@@ -60,7 +60,7 @@ export const signup = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-  const { email, password, username } = req.body;
+  const { email, password, username } = req.body.inputs;
   try {
     if ((!email && !username) || !password) {
       return res.status(400).json({
@@ -92,12 +92,12 @@ export const login = async (req, res) => {
     }
 
     // if password is correct, create JWT token and // store token in cookie
-    const token = generateTokenAndSetCookie(existingUser._id, res);
+    generateTokenAndSetCookie(existingUser._id, res);
 
     return res.status(200).json({
       sucess: true,
       message: "User Logged in Successfully.",
-      token: token,
+      user: existingUser,
     });
   } catch (error) {
     console.log("Error in Login", error.message);
