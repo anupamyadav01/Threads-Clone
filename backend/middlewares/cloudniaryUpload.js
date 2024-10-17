@@ -1,31 +1,46 @@
 import { v2 as cloudinary } from "cloudinary";
 
-export const uploadToCloudniary = async (req, res, next) => {
+export const uploadToCloudinary = async (req, res, next) => {
+  const { img } = req.body;
+
+  // Check if image is provided from frontend
+  if (!img) {
+    console.log("No image provided, skipping Cloudinary upload.");
+    return next(); // Skip upload and proceed to the next middleware/controller
+  }
+
+  // Cloudinary config
   cloudinary.config({
     cloud_name: process.env.CLOUDINARY_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
+    timeout: 120000, // Increase timeout to 120 seconds
   });
 
-  const { profilePic } = req.body;
   try {
-    if (req.user.profilePic) {
+    // If user already has an image, destroy the old one
+    if (req.user && req.user.img) {
       await cloudinary.uploader.destroy(
-        req.user.profilePic.split("/").pop().split(".")[0]
+        req.user.img.split("/").pop().split(".")[0]
       );
     }
-    const result = await cloudinary.uploader.upload(profilePic, {
+
+    // Log the image data
+    // console.log("Uploading image:", img);
+
+    // Upload new image
+    const result = await cloudinary.uploader.upload(img, {
       folder: "threads-clone",
-      timeout: 60000,
+      timeout: 120000, // Increase timeout for upload
     });
-    console.log("Upload to Cloudniary Executed");
-    req.secure_url = result.secure_url;
-    next();
+
+    // console.log("Image uploaded to Cloudinary:", result.secure_url);
+    req.secure_url = result.secure_url; // Store uploaded image URL in req
+    next(); // Move to the next middleware/controller
   } catch (error) {
-    console.log("Error from uploadToCloudniary", error);
-    res.status(500).json({
-      success: false,
-      message: "Unable to upload image, please try again later.",
-    });
+    console.error("Error in Cloudinary upload");
+    console.error(error);
   }
 };
+
+export default uploadToCloudinary;

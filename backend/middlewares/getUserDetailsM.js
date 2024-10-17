@@ -12,14 +12,11 @@ export const getUserDetails = async (req, res, next) => {
     } else if (req.headers.authorization) {
       token = req.headers.authorization.split(" ")[1];
     }
-
     if (!token) {
       return res.status(401).json({
-        success: false,
-        message: "Token is required.",
+        error: "Token is required.",
       });
     }
-
     // Verify token
     const respo = jwt.verify(token, process.env.JWT_SECRET);
 
@@ -27,18 +24,15 @@ export const getUserDetails = async (req, res, next) => {
     const user = await UserModel.findOne({ _id: respo.userId });
     if (!user) {
       return res.status(401).json({
-        success: false,
-        message: "Invalid token",
+        error: "Invalid token",
       });
     }
-
     req.user = user;
     next();
   } catch (error) {
     console.log("Error In GetUserDetails: ", error);
     res.status(500).json({
-      success: false,
-      message: "Something went wrong, please try again later.",
+      error: "Something went wrong, please try again later.",
       error: error.message,
     });
   }

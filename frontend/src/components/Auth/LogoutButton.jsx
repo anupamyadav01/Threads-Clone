@@ -3,32 +3,41 @@ import { useSetRecoilState } from "recoil";
 import { FiLogOut } from "react-icons/fi";
 import userAtom from "../../atoms/userAtom";
 import useShowToast from "../../hooks/useShowToast";
+import axiosInstance from "../../../axiosConfig";
+import { useNavigate } from "react-router-dom";
 
 const LogoutButton = () => {
+  const navigate = useNavigate();
   const setUser = useSetRecoilState(userAtom);
   const showToast = useShowToast();
 
   const handleLogout = async () => {
     try {
-      const res = await fetch("/api/users/logout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await res.json();
+      // Send POST request to logout endpoint using axios
+      const res = await axiosInstance.post("/user/logout");
 
-      if (data.error) {
-        showToast("Error", data.error, "error");
+      console.log(res);
+
+      if (res?.data?.error) {
+        showToast("Error", res.data.error, "error");
         return;
       }
 
       localStorage.removeItem("user-threads");
       setUser(null);
+      navigate("/auth");
+
+      showToast("Success", "Logged out successfully", "success");
     } catch (error) {
-      showToast("Error", error, "error");
+      // Handle errors from the request and response
+      showToast(
+        "Error",
+        error?.response?.data?.error || error.message || "Logout failed",
+        "error"
+      );
     }
   };
+
   return (
     <Button
       position={"fixed"}

@@ -14,7 +14,7 @@ import {
   verifyOTP,
 } from "../controllers/userController.js";
 import getUserDetails from "../middlewares/getUserDetailsM.js";
-import { uploadToCloudniary } from "../middlewares/cloudniaryUpload.js";
+import uploadToCloudinary from "../middlewares/cloudniaryUpload.js";
 
 export const userRoutes = express.Router();
 
@@ -32,7 +32,7 @@ userRoutes.post("/follow/:queryId", getUserDetails, followUnFollowUser);
 userRoutes.put(
   "/update/:userId",
   getUserDetails,
-  uploadToCloudniary,
+  uploadToCloudinary,
   updateUserProfile
 );
 

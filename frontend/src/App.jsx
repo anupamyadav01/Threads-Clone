@@ -8,6 +8,8 @@ import AuthPage from "./pages/AuthPage/AuthPage";
 import { useRecoilValue } from "recoil";
 import userAtom from "./atoms/userAtom";
 import UpdateProfilePage from "./pages/UpdateProfile/UpdateProfile";
+import CreatePost from "./components/Post/CreatePost";
+import SearchPage from "./pages/SearchPage/SearchPage";
 
 const App = () => {
   const { colorMode } = useColorMode();
@@ -50,6 +52,8 @@ const App = () => {
                 path="/update"
                 element={user ? <UpdateProfilePage /> : <Navigate to="/auth" />}
               />
+              <Route path="/search" element={<SearchPage />} />
+              <Route path="/create" element={<CreatePost />} />
               <Route path="/:username" element={<UserPage />} />
               <Route path="/:username/post/:postId" element={<PostDetails />} />
             </Routes>

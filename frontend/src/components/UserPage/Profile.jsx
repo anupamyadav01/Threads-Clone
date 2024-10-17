@@ -18,6 +18,7 @@ import {
   MenuItem,
   useColorMode,
   useColorModeValue,
+  Spinner,
 } from "@chakra-ui/react";
 import { Link, useParams } from "react-router-dom";
 import { PiDotsThreeCircleLight } from "react-icons/pi";
@@ -31,6 +32,7 @@ import userAtom from "../../atoms/userAtom";
 import useFollowUnfollow from "../../hooks/useFollowUnfollow";
 
 const Profile = () => {
+  const [loading, setLoading] = useState(true);
   const { colorMode } = useColorMode();
   const showToast = useShowToast();
   const { username } = useParams();
@@ -87,11 +89,21 @@ const Profile = () => {
         }
       } catch (error) {
         console.log("Error from getUserDetails: ", error);
+      } finally {
+        setLoading(false);
       }
     };
     getUserDetails();
   }, [username, showToast]);
-  if (!user) return null;
+  if (!user && loading) {
+    return (
+      <Flex justifyContent={"center"}>
+        <Spinner size={"xl"} />
+      </Flex>
+    );
+  }
+
+  if (!user && !loading) return <h1>User not found</h1>;
   return (
     <VStack spacing={4}>
       <Flex

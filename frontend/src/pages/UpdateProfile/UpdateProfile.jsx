@@ -40,7 +40,7 @@ export default function UpdateProfilePage() {
     try {
       const res = await axiosInstance.put(`/user/update/${user._id}`, {
         ...inputs,
-        profilePic: imgUrl,
+        img: imgUrl,
       });
 
       if (res?.data?.error) {

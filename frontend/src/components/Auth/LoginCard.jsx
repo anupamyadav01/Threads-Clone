@@ -55,6 +55,8 @@ export default function LoginCard() {
     } catch (error) {
       setLoading(false);
       showToast("Error", error?.response?.data?.error, "error");
+    } finally {
+      setLoading(false);
     }
   };
   return (

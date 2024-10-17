@@ -28,7 +28,7 @@ export const createPost = async (req, res) => {
     const postObj = {
       postedBy: new mongoose.Types.ObjectId(postedBy),
       content,
-      img,
+      img: req.secure_url || img,
     };
 
     const newPost = await PostModel.create(postObj);

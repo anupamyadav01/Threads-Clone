@@ -115,9 +115,14 @@ export const checkLoggedIn = async (req, res) => {
   }
 };
 
-export const logout = async (req, res) => {
-  res.clearCookie("token");
-  res.status(200).json({ message: "Logged out successfully" });
+export const logout = (req, res) => {
+  try {
+    res.cookie("token", "", { maxAge: 1 });
+    res.status(200).json({ message: "User logged out successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+    console.log("Error in signupUser: ", err.message);
+  }
 };
 
 export const forgotPassword = async (req, res) => {
@@ -241,10 +246,21 @@ export const getUserProfile = async (req, res) => {
         error: "User ID is required",
       });
     }
-    const user = await UserModel.findOne({ username: query })
-      .select("-password")
-      .select("-otp")
-      .select("-updatedAt");
+    let user;
+    // check if query is valid id or not
+    if (mongoose.Types.ObjectId.isValid(query)) {
+      // find user by id
+      user = await UserModel.findOne({ _id: query })
+        .select("-password")
+        .select("-otp")
+        .select("-updatedAt");
+    } else {
+      user = await UserModel.findOne({ username: query })
+        .select("-password")
+        .select("-otp")
+        .select("-updatedAt");
+    }
+
     if (!user) {
       return res.status(400).json({
         error: "User not found",
@@ -353,7 +369,7 @@ export const updateUserProfile = async (req, res) => {
   // if we are here that means user is logged in and has a valid token and we can update user profile
   const currentUser = req.user;
   const cloudinaryURL = req.secure_url;
-  const { name, username, bio, password, profilePic } = req.body;
+  const { name, username, bio, password } = req.body;
   try {
     if (currentUser._id.toString() !== req.params.userId) {
       return res.status(400).json({
