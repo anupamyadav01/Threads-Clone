@@ -16,32 +16,82 @@ import {
   Menu,
   MenuList,
   MenuItem,
-  useToast,
   useColorMode,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { PiDotsThreeCircleLight } from "react-icons/pi";
 import { FaCopy } from "react-icons/fa6";
 import UserPost from "./UserPost";
+import { useEffect, useState } from "react";
+import axiosInstance from "../../../axiosConfig";
+import useShowToast from "../../hooks/useShowToast";
+import { useRecoilValue } from "recoil";
+import userAtom from "../../atoms/userAtom";
+import useFollowUnfollow from "../../hooks/useFollowUnfollow";
 
 const Profile = () => {
-  const toast = useToast();
+  const { colorMode } = useColorMode();
+  const showToast = useShowToast();
+  const { username } = useParams();
+  const [user, setUser] = useState(null);
+  const loggedInUser = useRecoilValue(userAtom);
+  // const [following, setFollowing] = useState(
+  //   user?.followers?.includes(loggedInUser?._id)
+  // );
+
+  const { handleFollowUnfollow, following, updating } = useFollowUnfollow(user);
+  // const handleFollowUnfollow = async () => {
+  //   try {
+  //     const response = await axiosInstance.post(
+  //       `/user/follow/${user?._id}`,
+  //       {}
+  //     );
+  //     console.log(response?.data?.message);
+
+  //     if (response?.data?.error) {
+  //       showToast("Error", response?.data?.error, "error");
+  //       return;
+  //     } else {
+  //       showToast("Success", response?.data?.message, "success");
+  //       setFollowing(!following);
+  //       return;
+  //     }
+  //   } catch (error) {
+  //     console.log("Error from handleFollowUnfollow: ", error);
+  //     showToast("Error", error?.response?.data?.error, "error");
+  //   }
+  // };
   const copyUserURL = () => {
     navigator.clipboard.writeText(window.location.href).then(() => {
-      toast({
-        title: "Profile URL Copied to clipboard",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
+      showToast("Copied", "User URL copied to clipboard", "success");
     });
   };
-  const { username } = useParams();
-  const { colorMode } = useColorMode();
+
   const activeColor = "white"; // Color for the active tab
   const inactiveColor = useColorModeValue("gray.500", "gray.400"); // Dim color for inactive tabs
   const activeBorderColor = "white"; // Border color for active tab
+
+  useEffect(() => {
+    const getUserDetails = async () => {
+      try {
+        const response = await axiosInstance.get(`/user/profile/${username}`);
+        if (response?.data?.error) {
+          showToast("Error", response?.data?.error, "error");
+          setUser([[]]);
+          return;
+        } else {
+          showToast("Success", "User fetched successfully", "success");
+          setUser(response?.data?.user);
+          return;
+        }
+      } catch (error) {
+        console.log("Error from getUserDetails: ", error);
+      }
+    };
+    getUserDetails();
+  }, [username, showToast]);
+  if (!user) return null;
   return (
     <VStack spacing={4}>
       <Flex
@@ -55,30 +105,44 @@ const Profile = () => {
         {/* Left - User info */}
         <VStack align="flex-start" spacing={0}>
           <Text fontWeight="bold" fontSize="2xl">
-            Salome Munoz
+            {user?.name}
           </Text>
-          <Text pb={4}>@{username}</Text>
-          <Text pb={4}>CEO of Facebook</Text>
+          <Text pb={4}>@{user?.username}</Text>
+          <Text pb={4}>{user?.bio}</Text>
           <Flex fontSize="sm" color="gray.400">
-            <Text>525K followers</Text>
-            <Text>525K followers</Text>
+            <Text>{user?.followers?.length} followers</Text>
           </Flex>
+          {loggedInUser?._id === user?._id && (
+            <Link to={"/update"}>
+              <Button variant="outline" w="100%">
+                Update Profile
+              </Button>
+            </Link>
+          )}
+          {loggedInUser?._id !== user?._id && (
+            <Button
+              variant="outline"
+              w="100%"
+              onClick={handleFollowUnfollow}
+              isLoading={updating}
+            >
+              {following ? "Unfollow" : "Follow"}
+            </Button>
+          )}
         </VStack>
 
-        {/* Right - Avatar */}
+        {/* Right - Avatar and Action Button */}
         <Flex flexDir={"column"} justifyContent={"end"} gap={4} align={"end"}>
-          <Avatar size="xl" src="/zuck-avatar.png" name="Salome Munoz" />
+          <Avatar size="xl" src={user?.profilePic} name="Salome Munoz" />
 
-          {/* Right - Action Button */}
           <Menu>
-            <MenuButton>
-              <IconButton
-                aria-label="Home"
-                icon={<PiDotsThreeCircleLight />}
-                variant="ghost"
-                fontSize="30px"
-              />
-            </MenuButton>
+            <MenuButton
+              as={IconButton} // Use IconButton directly within MenuButton to avoid nesting button elements
+              aria-label="Options"
+              icon={<PiDotsThreeCircleLight />}
+              variant="ghost"
+              fontSize="30px"
+            />
             <MenuList>
               <MenuItem justifyContent={"space-between"} onClick={copyUserURL}>
                 Copy Link <FaCopy />
@@ -87,7 +151,7 @@ const Profile = () => {
           </Menu>
         </Flex>
       </Flex>
-      px={6}
+
       {/* Action Buttons */}
       <HStack justifyContent="space-between" p={4} w="100%">
         <Button variant="outline" w="48%">
@@ -97,7 +161,10 @@ const Profile = () => {
           Mention
         </Button>
       </HStack>
+
       <Divider />
+
+      {/* Tabs Section */}
       <Tabs variant="unstyled" align="center" w="100%">
         <TabList
           justifyContent="space-around"
@@ -112,7 +179,7 @@ const Profile = () => {
             }}
             color={inactiveColor}
             fontWeight="bold"
-            px={6} /* Add padding for better visual balance */
+            px={6} // Add padding for better visual balance
           >
             Threads
           </Tab>
@@ -144,7 +211,6 @@ const Profile = () => {
         <TabPanels>
           <TabPanel>
             <UserPost />
-
             <UserPost />
             <UserPost />
             <UserPost />

@@ -56,7 +56,6 @@ export const login = async (req, res) => {
   try {
     if ((!email && !username) || !password) {
       return res.status(400).json({
-        success: false,
         message: "Please enter email/username and password",
       });
     }
@@ -69,7 +68,7 @@ export const login = async (req, res) => {
 
     // user not found
     if (!existingUser) {
-      return res.status(400).json({ message: "User Not Found" });
+      return res.status(400).json({ error: "User Not Found" });
     }
 
     // checking if password is correct or not
@@ -80,7 +79,7 @@ export const login = async (req, res) => {
     if (!isPasswordCorrect) {
       return res
         .status(400)
-        .json({ message: "Password is Incorrect, try again" });
+        .send({ error: "Password is Incorrect, try again" });
     }
 
     // if password is correct, create JWT token and // store token in cookie
@@ -91,11 +90,11 @@ export const login = async (req, res) => {
       user: existingUser,
     });
   } catch (error) {
-    console.log("Error in Login", error.message);
+    console.log("Error in Login", error);
 
     return res.status(500).json({
-      message: "Internal server error",
-      error: error.message,
+      error: "Internal server error",
+      errorMsg: error.message,
     });
   }
 };
@@ -127,16 +126,12 @@ export const forgotPassword = async (req, res) => {
     const { email } = req.body;
 
     if (!email) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Email is required" });
+      return res.status(400).json({ error: "Email is required" });
     }
     // check in bd wheater user exists or not in database
     const user = await UserModel.findOne({ email });
     if (!user) {
-      return res
-        .status(400)
-        .json({ success: false, message: "User not found" });
+      return res.status(400).json({ error: "User not found" });
     }
 
     const otpExpiryTime = 10; // 10 minutes expiry time
@@ -182,15 +177,12 @@ export const forgotPassword = async (req, res) => {
       }
     } else {
       return res.status(500).json({
-        success: false,
-        message: "Failed to send OTP, please try again later",
+        error: "Failed to send OTP, please try again later",
       });
     }
   } catch (error) {
     console.error("Error from reset password:", error);
-    res
-      .status(500)
-      .json({ success: false, message: "Server error, failed to send OTP" });
+    res.status(500).json({ error: "Server error, failed to send OTP" });
   }
 };
 
@@ -198,29 +190,23 @@ export const verifyOTP = async (req, res) => {
   try {
     const { email, otp } = req.body;
     if (!email || !otp) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Email and OTP are required" });
+      return res.status(400).json({ error: "Email and OTP are required" });
     }
 
     const user = await UserModel.findOne({ email });
     if (!user) {
-      return res
-        .status(400)
-        .json({ success: false, message: "User not found" });
+      return res.status(400).json({ error: "User not found" });
     }
 
     if (user.otp !== otp) {
-      return res.status(400).json({ success: false, message: "Invalid OTP" });
+      return res.status(400).json({ error: "Invalid OTP" });
     }
     return res
       .status(200)
       .json({ success: true, message: "OTP verified successfully" });
   } catch (error) {
     console.error("Error from verify OTP:", error);
-    res
-      .status(500)
-      .json({ success: false, message: "Server error, failed to verify OTP" });
+    res.status(500).json({ error: "Server error, failed to verify OTP" });
   }
 };
 
@@ -252,8 +238,7 @@ export const getUserProfile = async (req, res) => {
     const { query } = req.params;
     if (!query) {
       return res.status(400).json({
-        success: false,
-        message: "User ID is required",
+        error: "User ID is required",
       });
     }
     const user = await UserModel.findOne({ username: query })
@@ -262,8 +247,7 @@ export const getUserProfile = async (req, res) => {
       .select("-updatedAt");
     if (!user) {
       return res.status(400).json({
-        success: false,
-        message: "User not found",
+        error: "User not found",
       });
     } else {
       return res.status(200).json({
@@ -274,8 +258,7 @@ export const getUserProfile = async (req, res) => {
   } catch (error) {
     console.log("Error from getUserProfile:", error);
     return res.status(500).json({
-      success: false,
-      message: "Server error, failed to get user profile",
+      error: "Server error, failed to get user profile",
     });
   }
 };
@@ -287,15 +270,13 @@ export const followUnFollowUser = async (req, res) => {
 
     if (!queryId) {
       return res.status(400).json({
-        success: false,
-        message: "User ID is required",
+        error: "User ID is required",
       });
     }
     // prevent user from following himself
     if (queryId.toString() === currentUser._id.toString()) {
       return res.status(400).json({
-        success: false,
-        message: "You cannot follow/unfollow yourself",
+        error: "You cannot follow/unfollow yourself",
       });
     }
     // checking if user is already followed
@@ -362,8 +343,7 @@ export const followUnFollowUser = async (req, res) => {
     console.log("Error from followUnFollowUser:", error);
 
     return res.status(500).json({
-      success: false,
-      message: "Server error, failed to follow/unfollow user",
+      error: "Server error, failed to follow/unfollow user",
       error: error.message,
     });
   }
@@ -377,8 +357,7 @@ export const updateUserProfile = async (req, res) => {
   try {
     if (currentUser._id.toString() !== req.params.userId) {
       return res.status(400).json({
-        success: false,
-        message: "You can update only your profile",
+        error: "You can update only your profile",
       });
     }
 
@@ -401,16 +380,14 @@ export const updateUserProfile = async (req, res) => {
       });
     } else {
       return res.status(400).json({
-        success: false,
-        message: "User profile update failed",
+        error: "User profile update failed",
       });
     }
   } catch (error) {
     console.log("Error from updateUserProfile:", error);
 
     return res.status(500).json({
-      success: false,
-      message: "Server error, failed to update user profile",
+      error: "Server error, failed to update user profile",
     });
   }
 };

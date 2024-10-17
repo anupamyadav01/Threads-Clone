@@ -43,15 +43,13 @@ export default function UpdateProfilePage() {
         profilePic: imgUrl,
       });
 
-      console.log(res);
-
-      // if (data.error) {
-      //   showToast("Error", data.error, "error");
-      //   return;
-      // }
+      if (res?.data?.error) {
+        showToast("Error", res?.data?.error, "error");
+        return;
+      }
       showToast("Success", "Profile updated successfully", "success");
-      // setUser(data);
-      // localStorage.setItem("user-threads", JSON.stringify(data));
+      setUser(res?.data?.error);
+      localStorage.setItem("user-threads", JSON.stringify(res?.data?.error));
     } catch (error) {
       showToast("Error", error, "error");
     } finally {

@@ -41,14 +41,16 @@ export default function SignupCard() {
       const res = await axiosInstance.post("/user/signup", { inputs });
       console.log(res.data);
 
-      if (res?.data?.status === false) {
+      if (res?.data?.error) {
         showToast("Error", res.error, "error");
         return;
       }
       localStorage.setItem("user-threads", JSON.stringify(res?.data?.user));
-      setUser(res);
+      setUser(res?.data?.user);
+      showToast("Success", res?.data?.message, "success");
+      setAuthScreen("login");
     } catch (error) {
-      showToast("Error in SignupCard: ", error);
+      showToast("Error", error?.response?.data?.message, "error");
     }
   };
 

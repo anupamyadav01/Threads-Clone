@@ -50,10 +50,11 @@ export default function LoginCard() {
 
       localStorage.setItem("user-threads", JSON.stringify(res?.data?.user));
       setUser(res?.data?.user);
+      showToast("Success", res?.data?.message, "success");
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      showToast("Error in SignupCard: ", error);
+      showToast("Error", error?.response?.data?.error, "error");
     }
   };
   return (
