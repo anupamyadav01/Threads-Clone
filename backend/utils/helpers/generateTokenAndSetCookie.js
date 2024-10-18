@@ -9,11 +9,12 @@ const generateTokenAndSetCookie = (user_id, res) => {
   });
 
   res.cookie("token", token, {
-    path: "/",
-    expires: new Date(Date.now() + 3600000), // expires in 1 hour
-    httpOnly: true,
-    sameSite: "strict",
+    httpOnly: true, // Prevents client-side access to the cookie
+    secure: process.env.NODE_ENV === "production", // Only send over HTTPS
+    sameSite: "None", // Allow cross-site cookies if needed
+    maxAge: 3600000, // Cookie expiration time
   });
+
   return token;
 };
 
