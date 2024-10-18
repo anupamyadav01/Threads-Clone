@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 10000;
 // Dynamically set CORS origin based on environment
 const CLIENT_URL =
   process.env.NODE_ENV === "production"
-    ? "https://your-production-frontend.vercel.app"
+    ? "https://threads-bro.vercel.app"
     : "http://localhost:5173";
 
 app.use(
