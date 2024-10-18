@@ -221,12 +221,7 @@ const Profile = () => {
         </TabList>
 
         <TabPanels>
-          <TabPanel>
-            <UserPost />
-            <UserPost />
-            <UserPost />
-            <UserPost />
-          </TabPanel>
+          <TabPanel></TabPanel>
           <TabPanel>
             <p>Replies</p>
           </TabPanel>

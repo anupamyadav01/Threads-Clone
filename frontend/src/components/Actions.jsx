@@ -20,97 +20,104 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import useShowToast from "../hooks/useShowToast";
 import userAtom from "../atoms/userAtom";
 import postsAtom from "../atoms/postsAtom";
+import axiosInstance from "../../axiosConfig";
 
 const Actions = ({ post }) => {
   const user = useRecoilValue(userAtom);
-  const [liked, setLiked] = useState(post.likes.includes(user?._id));
+  const [liked, setLiked] = useState(post?.likes?.includes(user?._id));
   const [posts, setPosts] = useRecoilState(postsAtom);
-  const [isLiking, setIsLiking] = useState(false);
-  const [isReplying, setIsReplying] = useState(false);
   const [reply, setReply] = useState("");
-
+  const [likedCount, setLikedCount] = useState(post?.likes?.length);
+  const [isReplying, setIsReplying] = useState(false);
   const showToast = useShowToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
+  // Optimistic Like/Unlike Handler
   const handleLikeAndUnlike = async () => {
-    if (!user)
+    if (!user) {
       return showToast(
         "Error",
         "You must be logged in to like a post",
         "error"
       );
-    if (isLiking) return;
-    setIsLiking(true);
-    try {
-      const res = await fetch("/api/posts/like/" + post._id, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await res.json();
-      if (data.error) return showToast("Error", data.error, "error");
+    }
 
-      if (!liked) {
-        // add the id of the current user to post.likes array
-        const updatedPosts = posts.map((p) => {
-          if (p._id === post._id) {
-            return { ...p, likes: [...p.likes, user._id] };
-          }
-          return p;
-        });
-        setPosts(updatedPosts);
-      } else {
-        // remove the id of the current user from post.likes array
-        const updatedPosts = posts.map((p) => {
-          if (p._id === post._id) {
-            return { ...p, likes: p.likes.filter((id) => id !== user._id) };
-          }
-          return p;
-        });
-        setPosts(updatedPosts);
+    // Optimistically update the UI
+    const newLiked = !liked;
+    const newLikedCount = liked ? likedCount - 1 : likedCount + 1;
+    setLiked(newLiked);
+    setLikedCount(newLikedCount);
+
+    try {
+      // Send request to update the like on the server
+      const res = await axiosInstance.put(`/post/like/${post._id}`);
+      const data = res?.data;
+
+      if (data?.error) {
+        // Rollback in case of error
+        setLiked(!newLiked);
+        setLikedCount(liked ? likedCount + 1 : likedCount - 1);
+        return showToast("Error", data.error, "error");
       }
 
-      setLiked(!liked);
+      // Update the post list with the new likes
+      const updatedPosts = posts.map((p) =>
+        p._id === post._id ? { ...p, likes: data.likes } : p
+      );
+      setPosts(updatedPosts);
     } catch (error) {
-      showToast("Error", error.message, "error");
-    } finally {
-      setIsLiking(false);
+      // Rollback in case of error
+      setLiked(!newLiked);
+      setLikedCount(liked ? likedCount + 1 : likedCount - 1);
+      showToast(
+        "Error",
+        error.response?.data?.message || error.message,
+        "error"
+      );
     }
   };
 
+  // Optimistic Reply Handler
   const handleReply = async () => {
-    if (!user)
+    if (!user) {
       return showToast(
         "Error",
         "You must be logged in to reply to a post",
         "error"
       );
-    if (isReplying) return;
-    setIsReplying(true);
-    try {
-      const res = await fetch("/api/posts/reply/" + post._id, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text: reply }),
-      });
-      const data = await res.json();
-      if (data.error) return showToast("Error", data.error, "error");
+    }
 
-      const updatedPosts = posts.map((p) => {
-        if (p._id === post._id) {
-          return { ...p, replies: [...p.replies, data] };
-        }
-        return p;
+    if (isReplying) return;
+
+    setIsReplying(true);
+
+    try {
+      // Send the reply text to the server
+      const res = await axiosInstance.put(`/post/reply/${post._id}`, {
+        replyText: reply,
       });
-      setPosts(updatedPosts);
+
+      const updatedPost = res?.data; // This contains the entire updated post
+
+      if (updatedPost?.error)
+        return showToast("Error", updatedPost.error, "error");
+
+      // Update posts state with the updated post
+      const updatedPosts = posts.map((p) =>
+        p._id === post._id ? updatedPost : p
+      );
+
+      setPosts([...updatedPosts]); // Trigger state update with the new array
+
       showToast("Success", "Reply posted successfully", "success");
-      onClose();
-      setReply("");
+      onClose(); // Close modal after reply
+      setReply(""); // Clear reply input
     } catch (error) {
-      showToast("Error", error.message, "error");
+      showToast(
+        "Error",
+        error.response?.data?.message || error.message,
+        "error"
+      );
     } finally {
       setIsReplying(false);
     }
@@ -162,11 +169,11 @@ const Actions = ({ post }) => {
 
       <Flex gap={2} alignItems={"center"}>
         <Text color={"gray.light"} fontSize="sm">
-          {post.replies.length} replies
+          {post?.replies?.length} replies
         </Text>
         <Box w={0.5} h={0.5} borderRadius={"full"} bg={"gray.light"}></Box>
         <Text color={"gray.light"} fontSize="sm">
-          {post.likes.length} likes
+          {likedCount ? likedCount : 0} likes
         </Text>
       </Flex>
 

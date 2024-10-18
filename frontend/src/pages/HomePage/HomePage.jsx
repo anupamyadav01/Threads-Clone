@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { Box, Text, Flex } from "@chakra-ui/react";
 import axiosInstance from "../../../axiosConfig";
 import Post from "../../components/Post/Post";
+import { useRecoilState } from "recoil";
+import postsAtom from "../../atoms/postsAtom";
 
 const HomePage = () => {
-  const [posts, setPosts] = useState([]); // State to store the posts
+  const [posts, setPosts] = useRecoilState(postsAtom);
   const [loading, setLoading] = useState(true); // State for loading indicator
   const [error, setError] = useState(null); // State for error handling
 

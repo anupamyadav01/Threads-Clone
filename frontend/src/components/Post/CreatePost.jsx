@@ -19,17 +19,19 @@ import { useRef, useState } from "react";
 
 import { BsFillImageFill } from "react-icons/bs";
 import { useRecoilState, useRecoilValue } from "recoil";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import useShowToast from "../../hooks/useShowToast";
 import userAtom from "../../atoms/userAtom";
 import usePreviewImg from "../../hooks/usePreviewImg";
 import modalAtom from "../../atoms/modalAtom";
 import axiosInstance from "../../../axiosConfig";
+import postsAtom from "../../atoms/postsAtom";
 
 const MAX_CHAR = 500;
 
 const CreatePost = () => {
-  const [isOpen, setIsOpen] = useRecoilState(modalAtom); // Recoil state to control modal
+  const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useRecoilState(modalAtom);
   const [postText, setPostText] = useState("");
   const { handleImageChange, imgUrl, setImgUrl } = usePreviewImg();
   const imageRef = useRef(null);
@@ -37,7 +39,7 @@ const CreatePost = () => {
   const user = useRecoilValue(userAtom);
   const showToast = useShowToast();
   const [loading, setLoading] = useState(false);
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useRecoilState(postsAtom);
   const { username } = useParams();
 
   const handleTextChange = (e) => {
@@ -77,6 +79,7 @@ const CreatePost = () => {
       setIsOpen(false); // Close modal
       setPostText("");
       setImgUrl("");
+      navigate("/");
     } catch (error) {
       // axios returns the error details in error.response
       const errorMessage =

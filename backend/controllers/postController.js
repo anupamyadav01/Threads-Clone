@@ -56,7 +56,10 @@ export const getPostById = async (req, res) => {
 
     const updatedPostId = new mongoose.Types.ObjectId(postId);
 
-    const post = await PostModel.findById(updatedPostId);
+    const post = await PostModel.findById(updatedPostId).populate({
+      path: "replies.userId", // Populate the userId inside replies
+      select: "username profilePic", // Select only the fields you need
+    });
     if (post) {
       return res.status(200).json({
         message: "Post fetched successfully",
@@ -171,43 +174,39 @@ export const likeUnlikePost = async (req, res) => {
 
 export const replyToPost = async (req, res) => {
   const { postId } = req.params;
+
   try {
     if (!postId) {
       return res.status(400).json({ message: "Invalid input: postId missing" });
     }
 
-    const { username, profilePic, _id } = req.user; // Access req.user directly
+    const { _id } = req.user; // Extract only userId from req.user
     const { replyText } = req.body;
 
-    // Validate that reply text is present and not just whitespace
     if (!replyText || replyText.trim() === "") {
       return res.status(400).json({ message: "Invalid input: reply missing" });
     }
 
     const reply = {
       userId: new mongoose.Types.ObjectId(_id),
-      username,
-      profilePic,
-      replyText: replyText.trim(), // Store trimmed version
+      replyText: replyText.trim(),
     };
 
     // Update the post to push the new reply to the replies array
     const updatedPost = await PostModel.findByIdAndUpdate(
       postId,
-      {
-        $push: { replies: reply },
-      },
+      { $push: { replies: reply } },
       { new: true }
-    );
+    ).populate({
+      path: "replies.userId", // Populate the userId inside replies
+      select: "username profilePic", // Select only the fields you need
+    });
 
     if (!updatedPost) {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    return res.status(200).json({
-      message: "Reply added successfully",
-      data: updatedPost,
-    });
+    return res.status(200).json(updatedPost); // Return only the updated post object
   } catch (error) {
     console.log("Error from replyToPost:", error);
     res.status(500).json({
@@ -233,7 +232,9 @@ export const getFeeds = async (req, res) => {
     // Fetch posts from users the current user is following
     const feedPosts = await PostModel.find({
       postedBy: { $in: following },
-    }).populate("postedBy"); // Populate user data
+    })
+      .sort({ postedBy: -1 })
+      .populate("postedBy"); // Populate user data
 
     return res.status(200).json({
       message: "Posts fetched successfully",
@@ -241,6 +242,37 @@ export const getFeeds = async (req, res) => {
     });
   } catch (error) {
     console.log("Error from getFeeds:", error);
+    res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+export const getPostsByUsername = async (req, res) => {
+  const { username } = req.params;
+
+  try {
+    if (!username) {
+      return res
+        .status(400)
+        .json({ message: "Invalid input: username missing" });
+    }
+
+    // check wheather username exists or not
+    const user = await UserModel.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const posts = await PostModel.find({ postedBy: user._id }).populate(
+      "postedBy"
+    );
+    return res.status(200).json({
+      posts,
+    });
+  } catch (error) {
+    console.log("Error from getPostsByUsername:", error);
     res.status(500).json({
       message: "Internal Server Error",
       error: error.message,
