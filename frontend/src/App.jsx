@@ -10,6 +10,7 @@ import userAtom from "./atoms/userAtom";
 import UpdateProfilePage from "./pages/UpdateProfile/UpdateProfile";
 import CreatePost from "./components/Post/CreatePost";
 import SearchPage from "./pages/SearchPage/SearchPage";
+import ChatPage from "./pages/ChatPage/ChatPage";
 
 const App = () => {
   const { colorMode } = useColorMode();
@@ -18,13 +19,15 @@ const App = () => {
     <>
       <Header />
       <Box
+        position={"relative"}
+        width={"full"}
         display="flex"
         justifyContent="center"
         mt={4} /* Adds margin between Header and content */
       >
         <Container
-          maxW={`720px`}
-          border={"0.5px solid"}
+          maxW={`810px`}
+          // border={"0.5px solid"}
           borderColor={colorMode === "dark" ? "gray.600" : "gray.200"}
           borderTopRadius={"30px"}
           h="90vh" /* Fixed height for the container */
@@ -56,6 +59,7 @@ const App = () => {
               <Route path="/create" element={<CreatePost />} />
               <Route path="/:username" element={<UserPage />} />
               <Route path="/:username/post/:postId" element={<PostDetails />} />
+              <Route path="/chat" element={<ChatPage />} />
             </Routes>
           </Box>
         </Container>

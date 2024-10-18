@@ -52,7 +52,7 @@ const Post = ({ post, postedBy }) => {
         gap={3}
         mb={4}
         py={12}
-        px={4}
+        px={12}
         bg={colorMode === "dark" ? "gray.800" : "white"}
         borderRadius="md"
         border={"1px"}

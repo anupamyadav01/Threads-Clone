@@ -27,8 +27,6 @@ const HomePage = () => {
   useEffect(() => {
     fetchPosts();
   }, []);
-  console.log(posts);
-
   // Conditional Rendering based on loading, error, and posts state
   if (loading) {
     return <Text>Loading posts...</Text>;

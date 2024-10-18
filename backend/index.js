@@ -5,11 +5,13 @@ import cookieParser from "cookie-parser";
 import { userRoutes } from "./routes/userRoutes.js";
 import connectToMongoDB from "./services/connectToMongoDB.js";
 import postRoutes from "./routes/postRoutes.js";
+import messageRoutes from "./routes/messageRoutes.js";
 
 const app = express();
 
 dotenv.config();
 connectToMongoDB();
+const PORT = process.env.PORT || 10000;
 
 app.use(
   cors({
@@ -26,8 +28,9 @@ app.use(cookieParser());
 
 app.use("/api/user", userRoutes);
 app.use("/api/post", postRoutes);
+app.use("/api/messages", messageRoutes);
 
-app.listen(process.env.PORT, () => {
+app.listen(PORT, () => {
   console.log(`Server started on port ${process.env.PORT}`);
 });
 

@@ -20,12 +20,14 @@ import userAtom from "../../atoms/userAtom";
 import modalAtom from "../../atoms/modalAtom";
 import { useNavigate } from "react-router-dom";
 import useShowToast from "../../hooks/useShowToast";
+import { BsChatDotsFill } from "react-icons/bs";
 
 const Header = ({ currentPage }) => {
   const showToast = useShowToast();
   const naviagte = useNavigate();
   const { colorMode, toggleColorMode } = useColorMode();
   const user = useRecoilValue(userAtom);
+  // eslint-disable-next-line no-unused-vars
   const [isOpen, setIsOpen] = useRecoilState(modalAtom); // Global state for modal
   const handleOnClick = () => {
     naviagte("/create");
@@ -94,6 +96,13 @@ const Header = ({ currentPage }) => {
           onClick={() => naviagte("/")}
           variant="ghost"
           fontSize="35px"
+        />
+        <IconButton
+          aria-label="Home"
+          icon={<BsChatDotsFill />}
+          onClick={() => naviagte("/chat")}
+          variant="ghost"
+          fontSize="30px"
         />
         <IconButton
           aria-label="Search"
