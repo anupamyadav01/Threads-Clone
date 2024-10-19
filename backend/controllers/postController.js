@@ -233,8 +233,8 @@ export const getFeeds = async (req, res) => {
     const feedPosts = await PostModel.find({
       postedBy: { $in: following },
     })
-      .sort({ postedBy: -1 })
-      .populate("postedBy"); // Populate user data
+      .populate("postedBy")
+      .sort({ createdAt: -1 }); // Populate user data
 
     return res.status(200).json({
       message: "Posts fetched successfully",
@@ -259,15 +259,17 @@ export const getPostsByUsername = async (req, res) => {
         .json({ message: "Invalid input: username missing" });
     }
 
-    // check wheather username exists or not
+    // Check whether the username exists
     const user = await UserModel.findOne({ username });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const posts = await PostModel.find({ postedBy: user._id }).populate(
-      "postedBy"
-    );
+    // Fetch the posts by the user's _id, sort them by 'createdAt' in descending order
+    const posts = await PostModel.find({ postedBy: user._id })
+      .populate("postedBy")
+      .sort({ createdAt: -1 }); // Sort in descending order
+
     return res.status(200).json({
       posts,
     });
