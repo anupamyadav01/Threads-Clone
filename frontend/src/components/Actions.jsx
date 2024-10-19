@@ -42,6 +42,11 @@ const Actions = ({ post }) => {
       );
     }
 
+    // Prevent the logged-in user from liking their own post
+    if (post.postedBy._id === user._id) {
+      return showToast("Error", "You cannot like your own post", "error");
+    }
+
     // Optimistically update the UI
     const newLiked = !liked;
     const newLikedCount = liked ? likedCount - 1 : likedCount + 1;
