@@ -7,8 +7,6 @@ export const getUserDetails = async (req, res, next) => {
       req.cookies.token ||
       (req.headers.authorization && req.headers.authorization.split(" ")[1]);
 
-    console.log("Extracted token:", token);
-
     if (!token) {
       return res.status(401).json({
         error: "Token is required.",

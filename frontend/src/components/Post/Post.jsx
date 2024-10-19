@@ -26,10 +26,7 @@ const Post = ({ post, postedBy }) => {
       if (!window.confirm("Are you sure you want to delete this post?")) return;
 
       const res = await axiosInstance.delete(`/post/${post._id}`);
-
       const data = res.data;
-      console.log(data);
-
       if (data.error) {
         showToast("Error", data.error, "error");
         return;
@@ -160,12 +157,12 @@ const Post = ({ post, postedBy }) => {
             fontSize="base"
             color={colorMode === "dark" ? "gray.300" : "gray.600"}
           >
-            {post.content}
+            {post?.content}
           </Text>
 
-          {post.img && (
+          {post?.img && (
             <Box borderRadius={6} overflow="hidden">
-              <Image src={post.img} w="full" />
+              <Image src={post?.img} w="full" />
             </Box>
           )}
 

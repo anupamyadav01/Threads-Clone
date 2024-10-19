@@ -5,8 +5,6 @@ import authScreenAtom from "../../atoms/authAtom";
 
 const AuthPage = () => {
   const authScreenState = useRecoilValue(authScreenAtom);
-  console.log(authScreenState);
-
   return (
     <div>{authScreenState === "login" ? <LoginCard /> : <SignupCard />}</div>
   );

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Box, Text, Flex } from "@chakra-ui/react";
+import { Box, Text, Flex, Spinner } from "@chakra-ui/react";
 import axiosInstance from "../../../axiosConfig";
 import Post from "../../components/Post/Post";
 import { useRecoilState } from "recoil";
@@ -11,25 +11,29 @@ const HomePage = () => {
   const [error, setError] = useState(null); // State for error handling
 
   // Function to fetch posts
-  const fetchPosts = async () => {
-    try {
-      // Send GET request to fetch posts
-      const response = await axiosInstance.get("/post/feeds"); // Adjust the URL as per your backend route
-      setPosts(response?.data?.data);
-      setLoading(false);
-    } catch (err) {
-      setError(err.message || "Failed to fetch posts");
-      setLoading(false);
-    }
-  };
 
   // UseEffect to fetch posts on component mount
   useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        // Send GET request to fetch posts
+        const response = await axiosInstance.get("/post/feeds"); // Adjust the URL as per your backend route
+        setPosts(response?.data?.data);
+        setLoading(false);
+      } catch (err) {
+        setError(err.message || "Failed to fetch posts");
+        setLoading(false);
+      }
+    };
     fetchPosts();
-  }, []);
+  }, [setPosts]);
   // Conditional Rendering based on loading, error, and posts state
   if (loading) {
-    return <Text>Loading posts...</Text>;
+    return (
+      <Flex height={"100vh"} justifyContent={"center"} alignItems={"center"}>
+        <Spinner size={"xl"} />
+      </Flex>
+    );
   }
 
   if (error) {

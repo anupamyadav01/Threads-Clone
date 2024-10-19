@@ -11,6 +11,7 @@ import UpdateProfilePage from "./pages/UpdateProfile/UpdateProfile";
 import CreatePost from "./components/Post/CreatePost";
 import SearchPage from "./pages/SearchPage/SearchPage";
 import ChatPage from "./pages/ChatPage/ChatPage";
+import Activity from "./pages/Activity/Activity";
 
 const App = () => {
   const { colorMode } = useColorMode();
@@ -56,10 +57,20 @@ const App = () => {
                 element={user ? <UpdateProfilePage /> : <Navigate to="/auth" />}
               />
               <Route path="/search" element={<SearchPage />} />
-              <Route path="/create" element={<CreatePost />} />
+              <Route
+                path="/create"
+                element={user ? <CreatePost /> : <Navigate to="/auth" />}
+              />
               <Route path="/:username" element={<UserPage />} />
               <Route path="/:username/post/:postId" element={<PostDetails />} />
-              <Route path="/chat" element={<ChatPage />} />
+              <Route
+                path="/activity"
+                element={user ? <Activity /> : <Navigate to="/auth" />}
+              />{" "}
+              <Route
+                path="/chat"
+                element={user ? <ChatPage /> : <Navigate to="/auth" />}
+              />
             </Routes>
           </Box>
         </Container>

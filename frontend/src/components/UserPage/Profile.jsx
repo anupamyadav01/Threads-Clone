@@ -18,12 +18,10 @@ import {
   MenuItem,
   useColorMode,
   useColorModeValue,
-  Spinner,
 } from "@chakra-ui/react";
 import { Link, useParams } from "react-router-dom";
 import { PiDotsThreeCircleLight } from "react-icons/pi";
 import { FaCopy } from "react-icons/fa6";
-import UserPost from "./UserPost";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../axiosConfig";
 import useShowToast from "../../hooks/useShowToast";
@@ -38,32 +36,8 @@ const Profile = () => {
   const { username } = useParams();
   const [user, setUser] = useState(null);
   const loggedInUser = useRecoilValue(userAtom);
-  // const [following, setFollowing] = useState(
-  //   user?.followers?.includes(loggedInUser?._id)
-  // );
 
   const { handleFollowUnfollow, following, updating } = useFollowUnfollow(user);
-  // const handleFollowUnfollow = async () => {
-  //   try {
-  //     const response = await axiosInstance.post(
-  //       `/user/follow/${user?._id}`,
-  //       {}
-  //     );
-  //     console.log(response?.data?.message);
-
-  //     if (response?.data?.error) {
-  //       showToast("Error", response?.data?.error, "error");
-  //       return;
-  //     } else {
-  //       showToast("Success", response?.data?.message, "success");
-  //       setFollowing(!following);
-  //       return;
-  //     }
-  //   } catch (error) {
-  //     console.log("Error from handleFollowUnfollow: ", error);
-  //     showToast("Error", error?.response?.data?.error, "error");
-  //   }
-  // };
   const copyUserURL = () => {
     navigator.clipboard.writeText(window.location.href).then(() => {
       showToast("Copied", "User URL copied to clipboard", "success");
@@ -83,7 +57,6 @@ const Profile = () => {
           setUser([[]]);
           return;
         } else {
-          showToast("Success", "User fetched successfully", "success");
           setUser(response?.data?.user);
           return;
         }
@@ -95,13 +68,6 @@ const Profile = () => {
     };
     getUserDetails();
   }, [username, showToast]);
-  if (!user && loading) {
-    return (
-      <Flex justifyContent={"center"}>
-        <Spinner size={"xl"} />
-      </Flex>
-    );
-  }
 
   if (!user && !loading) return <h1>User not found</h1>;
   return (

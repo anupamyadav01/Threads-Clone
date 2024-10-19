@@ -5,7 +5,7 @@ import useShowToast from "../../hooks/useShowToast";
 import { useParams } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import postsAtom from "../../atoms/postsAtom";
-import { Flex, Spinner } from "@chakra-ui/react";
+import { Flex, Spinner, Text } from "@chakra-ui/react";
 import Post from "../../components/Post/Post";
 
 const UserPage = () => {
@@ -48,7 +48,6 @@ const UserPage = () => {
           setUser([[]]);
           return;
         } else {
-          showToast("Success", "User fetched successfully", "success");
           setUser(response?.data?.user);
           return;
         }
@@ -61,10 +60,16 @@ const UserPage = () => {
     getUserDetails();
   }, [username, showToast]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <Flex height={"100vh"} justifyContent={"center"} alignItems={"center"}>
+        <Spinner size={"xl"} />
+      </Flex>
+    );
+  }
   if (!user && loading) {
     return (
-      <Flex justifyContent={"center"} alignItems={"center"}>
+      <Flex justifyContent={"center"} alignItems={"center"} height={"100vh"}>
         <Spinner size={"xl"} />
       </Flex>
     );
@@ -72,7 +77,12 @@ const UserPage = () => {
 
   if (!user && !loading)
     return (
-      <Flex w={"full"} justifyContent={"center"} alignItems={"center"}>
+      <Flex
+        w={"full"}
+        height={"100vh"}
+        justifyContent={"center"}
+        alignItems={"center"}
+      >
         <h1>User not found</h1>
       </Flex>
     );
@@ -80,14 +90,16 @@ const UserPage = () => {
   return (
     <>
       <Profile />
-
-      {!fetchingPosts && posts.length === 0 && <h1>User has not posts.</h1>}
+      {!fetchingPosts && posts.length === 0 && (
+        <Flex justifyContent={"center"}>
+          <Text fontSize={"30px"}>User has not posts.</Text>
+        </Flex>
+      )}
       {fetchingPosts && (
         <Flex justifyContent={"center"} my={12}>
           <Spinner size={"xl"} />
         </Flex>
       )}
-
       {posts?.map((post) => (
         <Post key={post._id} post={post} postedBy={post.postedBy} />
       ))}
