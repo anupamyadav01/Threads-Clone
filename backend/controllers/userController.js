@@ -407,7 +407,31 @@ export const updateUserProfile = async (req, res) => {
     });
   }
 };
+export const searchUser = async (req, res) => {
+  try {
+    const { query } = req.query;
 
+    if (!query) {
+      return res.status(400).json({ message: "Search query is required" });
+    }
+
+    const regex = new RegExp(query, "i");
+
+    const users = await UserModel.find({
+      $or: [{ username: { $regex: regex } }, { name: { $regex: regex } }],
+    }).select("username name followers profilePic verified");
+
+    // If no users found
+    if (users.length === 0) {
+      return res.status(404).json({ message: "No users found" });
+    }
+
+    return res.status(200).json(users);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
 export const freezeAccount = async (req, res) => {};
 
 export const getSuggestedUsers = async (req, res) => {};

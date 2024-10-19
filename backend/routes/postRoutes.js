@@ -14,7 +14,7 @@ const postRoutes = express.Router();
 
 postRoutes.get("/feeds", getUserDetails, getFeeds);
 postRoutes.get("/:postId", getPostById);
-postRoutes.get("/user/:username", getUserDetails, getPostsByUsername);
+postRoutes.get("/user/:username", getPostsByUsername);
 postRoutes.post("/create", getUserDetails, uploadToCloudinary, createPost);
 postRoutes.delete("/:postId", getUserDetails, deletePostById);
 

@@ -9,6 +9,7 @@ import {
   login,
   logout,
   resetPassword,
+  searchUser,
   signup,
   updateUserProfile,
   verifyOTP,
@@ -35,6 +36,8 @@ userRoutes.put(
   uploadToCloudinary,
   updateUserProfile
 );
+
+userRoutes.get("/search", searchUser);
 
 // userRoutes.get("/suggested", protectRoute, getSuggestedUsers);
 // userRoutes.put("/freeze", protectRoute, freezeAccount);
