@@ -12,7 +12,6 @@ import {
 import { GiConversation } from "react-icons/gi";
 import { useEffect, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
-import Conversation from "../../components/Chatting/Conversation";
 import MessageContainer from "../../components/Chatting/MessageContainer";
 import useShowToast from "../../hooks/useShowToast";
 import userAtom from "../../atoms/userAtom";
@@ -22,6 +21,7 @@ import {
   selectedConversationAtom,
 } from "../../atoms/messagesAtom";
 import axiosInstance from "../../../axiosConfig";
+import Conversation from "../../components/Chatting/Conversation";
 
 const ChatPage = () => {
   const [searchingUser, setSearchingUser] = useState(false);
@@ -58,16 +58,20 @@ const ChatPage = () => {
   useEffect(() => {
     const getConversations = async () => {
       try {
-        const res = await fetch("/api/messages/conversations");
-        const data = await res.json();
+        const res = await axiosInstance.get("/messages/conversations");
+        const data = res.data; // Axios returns the data in res.data
         if (data.error) {
           showToast("Error", data.error, "error");
           return;
         }
-        console.log(data);
+        console.log("chatted users", data);
         setConversations(data);
       } catch (error) {
-        showToast("Error", error.message, "error");
+        showToast(
+          "Error",
+          error.response?.data?.message || error.message,
+          "error"
+        );
       } finally {
         setLoadingConversations(false);
       }
@@ -209,13 +213,13 @@ const ChatPage = () => {
               <Conversation
                 key={conversation._id}
                 isOnline={onlineUsers.includes(
-                  conversation.participants[0]._id
+                  conversation?.participants[0]?._id
                 )}
                 conversation={conversation}
               />
             ))}
         </Flex>
-        {!selectedConversation._id && (
+        {!selectedConversation?._id && (
           <Flex
             flex={70}
             borderRadius={"md"}
@@ -230,7 +234,7 @@ const ChatPage = () => {
           </Flex>
         )}
 
-        {selectedConversation._id && <MessageContainer />}
+        {selectedConversation?._id && <MessageContainer />}
       </Flex>
     </Box>
   );

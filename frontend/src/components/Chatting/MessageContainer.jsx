@@ -23,6 +23,7 @@ import {
 import userAtom from "../../atoms/userAtom.js";
 import { useSocket } from "../../context/SocketContext.jsx";
 import messageSound from "../../assets/sounds/message.mp3";
+import axiosInstance from "../../../axiosConfig.js";
 const MessageContainer = () => {
   const showToast = useShowToast();
   const selectedConversation = useRecoilValue(selectedConversationAtom);
@@ -32,6 +33,7 @@ const MessageContainer = () => {
   const { socket } = useSocket();
   const setConversations = useSetRecoilState(conversationsAtom);
   const messageEndRef = useRef(null);
+  console.log("messages", messages);
 
   useEffect(() => {
     socket.on("newMessage", (message) => {
@@ -102,17 +104,26 @@ const MessageContainer = () => {
     const getMessages = async () => {
       setLoadingMessages(true);
       setMessages([]);
+
       try {
         if (selectedConversation.mock) return;
-        const res = await fetch(`/api/messages/${selectedConversation.userId}`);
-        const data = await res.json();
+
+        const res = await axiosInstance.get(
+          `/messages/${selectedConversation.userId}`
+        );
+        const data = res.data;
+
         if (data.error) {
           showToast("Error", data.error, "error");
           return;
         }
         setMessages(data);
       } catch (error) {
-        showToast("Error", error.message, "error");
+        showToast(
+          "Error",
+          error.response?.data?.message || error.message,
+          "error"
+        );
       } finally {
         setLoadingMessages(false);
       }

@@ -52,7 +52,7 @@ export const signup = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-  const { email, password, username } = req.body.inputs;
+  const { email, password, username } = req.body;
   try {
     if ((!email && !username) || !password) {
       return res.status(400).json({

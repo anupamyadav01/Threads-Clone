@@ -39,7 +39,10 @@ export default function LoginCard() {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const res = await axiosInstance.post("/user/login", { inputs });
+      const res = await axiosInstance.post("/user/login", {
+        email: inputs.email,
+        password: inputs.password,
+      });
       if (res?.data?.status === false) {
         showToast("Error", res.error, "error");
         setLoading(false);

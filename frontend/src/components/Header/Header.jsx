@@ -9,8 +9,9 @@ import {
   IconButton,
   Button,
 } from "@chakra-ui/react";
-import { GoHeart, GoHomeFill } from "react-icons/go";
-import { IoAddOutline } from "react-icons/io5";
+import { GoHeart } from "react-icons/go";
+import { BiHomeAlt2 } from "react-icons/bi";
+import { IoAddOutline, IoChatbubbleEllipsesOutline } from "react-icons/io5";
 import { IoSearchOutline } from "react-icons/io5";
 import { FaRegUser } from "react-icons/fa6";
 import LogoutButton from "../Auth/LogoutButton";
@@ -21,21 +22,27 @@ import modalAtom from "../../atoms/modalAtom";
 import { useNavigate } from "react-router-dom";
 import useShowToast from "../../hooks/useShowToast";
 import { BsChatDotsFill } from "react-icons/bs";
+import { currentPageAtom } from "../../atoms/CurrentPageAtom";
 
-const Header = ({ currentPage }) => {
+const Header = () => {
   const showToast = useShowToast();
   const naviagte = useNavigate();
   const { colorMode, toggleColorMode } = useColorMode();
   const user = useRecoilValue(userAtom);
   // eslint-disable-next-line no-unused-vars
   const [isOpen, setIsOpen] = useRecoilState(modalAtom); // Global state for modal
+  const [currentPage, setCurrentPage] = useRecoilState(currentPageAtom);
+
   const handleOnClick = () => {
+    setCurrentPage("Create Post");
+
     naviagte("/create");
     setIsOpen(true);
   };
 
   const showUserProfile = () => {
     if (user) {
+      setCurrentPage("Profile");
       naviagte(`/${user.username}`);
     } else {
       showToast("Error", "Login to view profile", "error");
@@ -66,9 +73,7 @@ const Header = ({ currentPage }) => {
           src={colorMode === "dark" ? "/light-logo.svg" : "/dark-logo.svg"}
           onClick={toggleColorMode}
         />
-        <Text fontWeight="bold" fontSize="lg">
-          {currentPage} Home
-        </Text>
+        <Text fontSize="2xl">{currentPage}</Text>
         <Box>
           {user ? (
             <LogoutButton />
@@ -92,22 +97,31 @@ const Header = ({ currentPage }) => {
       >
         <IconButton
           aria-label="Home"
-          icon={<GoHomeFill />}
-          onClick={() => naviagte("/")}
+          icon={<BiHomeAlt2 />}
+          onClick={() => {
+            setCurrentPage("Home");
+            naviagte("/");
+          }}
           variant="ghost"
-          fontSize="35px"
+          fontSize="32px"
         />
         <IconButton
-          aria-label="Home"
-          icon={<BsChatDotsFill />}
-          onClick={() => naviagte("/chat")}
+          aria-label="Char"
+          icon={<IoChatbubbleEllipsesOutline />}
+          onClick={() => {
+            setCurrentPage("Chat");
+            naviagte("/chat");
+          }}
           variant="ghost"
           fontSize="30px"
         />
         <IconButton
           aria-label="Search"
           icon={<IoSearchOutline />}
-          onClick={() => naviagte("/search")}
+          onClick={() => {
+            setCurrentPage("Search");
+            naviagte("/search");
+          }}
           variant="ghost"
           fontSize="30px"
         />
@@ -121,7 +135,10 @@ const Header = ({ currentPage }) => {
         <IconButton
           aria-label="Notifications"
           icon={<GoHeart />}
-          onClick={() => naviagte("/activity")}
+          onClick={() => {
+            setCurrentPage("Notifications");
+            naviagte("/activity");
+          }}
           variant="ghost"
           fontSize="30px"
         />

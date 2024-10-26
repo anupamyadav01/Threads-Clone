@@ -24,6 +24,7 @@ const Conversation = ({ conversation, isOnline }) => {
     selectedConversationAtom
   );
   const colorMode = useColorMode();
+  console.log("user", user);
 
   console.log("selectedConverstion", selectedConversation);
   return (
@@ -39,10 +40,10 @@ const Conversation = ({ conversation, isOnline }) => {
       onClick={() =>
         setSelectedConversation({
           _id: conversation._id,
-          userId: user._id,
-          userProfilePic: user.profilePic,
-          username: user.username,
-          mock: conversation.mock,
+          userId: user?._id,
+          userProfilePic: user?.profilePic,
+          username: user?.username,
+          mock: conversation?.mock,
         })
       }
       bg={
@@ -61,7 +62,7 @@ const Conversation = ({ conversation, isOnline }) => {
             sm: "sm",
             md: "md",
           }}
-          src={user.profilePic}
+          src={user?.profilePic}
         >
           {isOnline ? <AvatarBadge boxSize="1em" bg="green.500" /> : ""}
         </Avatar>
@@ -69,7 +70,7 @@ const Conversation = ({ conversation, isOnline }) => {
 
       <Stack direction={"column"} fontSize={"sm"}>
         <Text fontWeight="700" display={"flex"} alignItems={"center"}>
-          {user.username} <Image src="/verified.png" w={4} h={4} ml={1} />
+          {user?.username} <Image src="/verified.png" w={4} h={4} ml={1} />
         </Text>
         <Text fontSize={"xs"} display={"flex"} alignItems={"center"} gap={1}>
           {currentUser._id === lastMessage.sender ? (

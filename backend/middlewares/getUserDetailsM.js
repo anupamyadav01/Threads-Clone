@@ -15,8 +15,6 @@ export const getUserDetails = async (req, res, next) => {
 
     // Verify token
     const respo = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("Token verification response:", respo);
-
     // Fetch user by ID
     const user = await UserModel.findOne({ _id: respo.userId });
     if (!user) {
