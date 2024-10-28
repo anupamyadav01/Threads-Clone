@@ -3,7 +3,6 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useRecoilValue } from "recoil";
 import io from "socket.io-client";
 import userAtom from "../atoms/userAtom";
-
 const SocketContext = createContext();
 
 export const useSocket = () => {
@@ -16,7 +15,7 @@ export const SocketContextProvider = ({ children }) => {
   const user = useRecoilValue(userAtom);
 
   useEffect(() => {
-    const socket = io("/", {
+    const socket = io("http://localhost:10000", {
       query: {
         userId: user?._id,
       },
@@ -26,6 +25,7 @@ export const SocketContextProvider = ({ children }) => {
 
     socket.on("getOnlineUsers", (users) => {
       setOnlineUsers(users);
+      console.log("Online users", users);
     });
     return () => socket && socket.close();
   }, [user?._id]);

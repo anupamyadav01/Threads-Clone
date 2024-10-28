@@ -6,8 +6,7 @@ import { userRoutes } from "./routes/userRoutes.js";
 import connectToMongoDB from "./services/connectToMongoDB.js";
 import postRoutes from "./routes/postRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
-
-const app = express();
+import { app, server } from "./socket/socket.js";
 
 // Load environment variables from the .env file
 dotenv.config();
@@ -42,7 +41,7 @@ app.use("/api/post", postRoutes);
 app.use("/api/messages", messageRoutes);
 
 // Start the server
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 });
 
