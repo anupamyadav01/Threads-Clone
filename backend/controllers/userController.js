@@ -246,31 +246,31 @@ export const getUserProfile = async (req, res) => {
         error: "User ID is required",
       });
     }
-    let user;
-    // check if query is valid id or not
-    if (mongoose.Types.ObjectId.isValid(query)) {
-      // find user by id
-      user = await UserModel.findOne({ _id: query })
-        .select("-password")
-        .select("-otp")
-        .select("-updatedAt");
-    } else {
-      user = await UserModel.findOne({ username: query })
-        .select("-password")
-        .select("-otp")
-        .select("-updatedAt");
-    }
 
+    let user;
+    if (mongoose.Types.ObjectId.isValid(query)) {
+      user = await UserModel.findOne({ _id: query })
+        .populate("followers", "username profilePic")
+        .populate("following", "username profilePic")
+        .select("-password -otp -updatedAt");
+    } else {
+      // Find user by username and populate followers and following fields
+      user = await UserModel.findOne({ username: query })
+        .populate("followers", "username profilePic")
+        .populate("following", "username profilePic")
+        .select("-password -otp -updatedAt");
+    }
     if (!user) {
       return res.status(400).json({
         error: "User not found",
       });
-    } else {
-      return res.status(200).json({
-        success: true,
-        user,
-      });
     }
+
+    return res.status(200).json({
+      success: true,
+      message: "this is message",
+      user,
+    });
   } catch (error) {
     console.log("Error from getUserProfile:", error);
     return res.status(500).json({

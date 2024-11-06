@@ -18,8 +18,16 @@ import {
   MenuItem,
   useColorMode,
   useColorModeValue,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  useDisclosure,
+  Box,
 } from "@chakra-ui/react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { PiDotsThreeCircleLight } from "react-icons/pi";
 import { FaCopy } from "react-icons/fa6";
 import { useEffect, useState } from "react";
@@ -30,23 +38,27 @@ import userAtom from "../../atoms/userAtom";
 import useFollowUnfollow from "../../hooks/useFollowUnfollow";
 
 const Profile = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const { colorMode } = useColorMode();
   const showToast = useShowToast();
   const { username } = useParams();
   const [user, setUser] = useState(null);
   const loggedInUser = useRecoilValue(userAtom);
-
   const { handleFollowUnfollow, following, updating } = useFollowUnfollow(user);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalUsers, setModalUsers] = useState([]);
+
   const copyUserURL = () => {
     navigator.clipboard.writeText(window.location.href).then(() => {
       showToast("Copied", "User URL copied to clipboard", "success");
     });
   };
 
-  const activeColor = "white"; // Color for the active tab
-  const inactiveColor = useColorModeValue("gray.500", "gray.400"); // Dim color for inactive tabs
-  const activeBorderColor = "white"; // Border color for active tab
+  const activeColor = "white";
+  const inactiveColor = useColorModeValue("gray.500", "gray.400");
+  const activeBorderColor = "white";
 
   useEffect(() => {
     const getUserDetails = async () => {
@@ -69,7 +81,22 @@ const Profile = () => {
     getUserDetails();
   }, [username, showToast]);
 
+  const openFollowersModal = () => {
+    setModalTitle("Followers");
+    setModalUsers(user?.followers || []);
+    onOpen();
+  };
+
+  const openFollowingModal = () => {
+    setModalTitle("Following");
+    setModalUsers(user?.following || []);
+    onOpen();
+  };
+  const closePopup = () => {
+    onClose();
+  };
   if (!user && !loading) return <h1>User not found</h1>;
+
   return (
     <VStack spacing={4}>
       <Flex
@@ -87,9 +114,7 @@ const Profile = () => {
           </Text>
           <Text pb={4}>@{user?.username}</Text>
           <Text pb={4}>{user?.bio}</Text>
-          <Flex fontSize="sm" color="gray.400">
-            <Text>{user?.followers?.length} followers</Text>
-          </Flex>
+
           {loggedInUser?._id === user?._id && (
             <Link to={"/update"}>
               <Button variant="outline" w="100%">
@@ -111,11 +136,11 @@ const Profile = () => {
 
         {/* Right - Avatar and Action Button */}
         <Flex flexDir={"column"} justifyContent={"end"} gap={4} align={"end"}>
-          <Avatar size="xl" src={user?.profilePic} name="Salome Munoz" />
+          <Avatar size="xl" src={user?.profilePic} name={user?.name} />
 
           <Menu>
             <MenuButton
-              as={IconButton} // Use IconButton directly within MenuButton to avoid nesting button elements
+              as={IconButton}
               aria-label="Options"
               icon={<PiDotsThreeCircleLight />}
               variant="ghost"
@@ -132,11 +157,11 @@ const Profile = () => {
 
       {/* Action Buttons */}
       <HStack justifyContent="space-between" p={4} w="100%">
-        <Button variant="outline" w="48%">
-          Following
+        <Button variant="outline" w="48%" onClick={openFollowersModal}>
+          {user?.followers?.length} followers
         </Button>
-        <Button variant="outline" w="48%">
-          Mention
+        <Button variant="outline" w="48%" onClick={openFollowingModal}>
+          {user?.following?.length} following
         </Button>
       </HStack>
 
@@ -157,7 +182,7 @@ const Profile = () => {
             }}
             color={inactiveColor}
             fontWeight="bold"
-            px={6} // Add padding for better visual balance
+            px={6}
           >
             Threads
           </Tab>
@@ -185,7 +210,6 @@ const Profile = () => {
             Reposts
           </Tab>
         </TabList>
-
         <TabPanels>
           <TabPanel></TabPanel>
           <TabPanel>
@@ -196,6 +220,42 @@ const Profile = () => {
           </TabPanel>
         </TabPanels>
       </Tabs>
+
+      {/* Followers/Following Modal */}
+      <Modal isOpen={isOpen} onClose={onClose} size="xs">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>{modalTitle}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {modalUsers?.length > 0 ? (
+              modalUsers?.map((user, index) => (
+                <Box key={index} display="flex" alignItems="center" mb={4}>
+                  <Avatar
+                    size="md"
+                    src={user?.profilePic}
+                    name={user?.username}
+                    mr={3}
+                  />
+                  {/* navigate(`/${postedBy?.username} */}
+                  <Link
+                    onClick={(e) => {
+                      closePopup();
+                      e.preventDefault();
+                      navigate(`/${user?.username}`);
+                    }}
+                    fontSize="larger"
+                  >
+                    {user?.username}
+                  </Link>
+                </Box>
+              ))
+            ) : (
+              <Text>No users to display.</Text>
+            )}
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </VStack>
   );
 };

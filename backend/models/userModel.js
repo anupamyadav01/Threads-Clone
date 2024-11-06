@@ -25,14 +25,20 @@ const userSchema = mongoose.Schema(
       type: String,
       default: "",
     },
-    followers: {
-      type: [String],
-      default: [],
-    },
-    following: {
-      type: [String],
-      default: [],
-    },
+    followers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: [], // Sets default as an empty array
+      },
+    ],
+    following: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: [], // Sets default as an empty array
+      },
+    ],
     bio: {
       type: String,
       default: "",
