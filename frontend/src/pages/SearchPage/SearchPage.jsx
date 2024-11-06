@@ -55,6 +55,30 @@ const SearchPage = () => {
     }
   }, [searchQuery]);
 
+  // Mock suggested users (you can replace these with real data or an API call)
+  const suggestedUsers = [
+    {
+      username: "john_doe",
+      name: "John Doe",
+      profilePic: "https://randomuser.me/api/portraits/men/1.jpg",
+    },
+    {
+      username: "jane_smith",
+      name: "Jane Smith",
+      profilePic: "https://randomuser.me/api/portraits/women/1.jpg",
+    },
+    {
+      username: "alex_king",
+      name: "Alex King",
+      profilePic: "https://randomuser.me/api/portraits/men/2.jpg",
+    },
+    {
+      username: "emily_james",
+      name: "Emily James",
+      profilePic: "https://randomuser.me/api/portraits/women/2.jpg",
+    },
+  ];
+
   return (
     <Box
       p={4}
@@ -110,9 +134,46 @@ const SearchPage = () => {
         bg={colorMode === "dark" ? "gray.800" : "white"}
         color={colorMode === "dark" ? "gray.300" : "gray.600"}
       >
+        {/* Display suggested users when searchQuery is empty or no results */}
+        {searchQuery.length === 0 && !loading && (
+          <Text fontWeight="bold" mb={4}>
+            Suggested Users
+          </Text>
+        )}
         {users.length === 0 && !loading && searchQuery && (
           <Text>No users found for {searchQuery}.</Text>
         )}
+        {users.length === 0 &&
+          !loading &&
+          searchQuery.length === 0 &&
+          suggestedUsers.map((user, index) => (
+            <HStack
+              key={index}
+              justify="space-between"
+              w="full"
+              p={2}
+              borderRadius="md"
+              _hover={{ bg: "gray.50" }}
+              cursor="pointer"
+              onClick={() => navigate(`/${user?.username}`)} // Navigate to user's page
+            >
+              <HStack spacing={4}>
+                <Avatar src={user?.profilePic} size="md" />
+                <Box>
+                  <HStack>
+                    <Text fontWeight="bold">{user.username}</Text>
+                    <CheckCircleIcon color="blue.500" boxSize={4} />
+                  </HStack>
+                  <Text fontSize="sm" color="gray.500">
+                    {user.name}
+                  </Text>
+                </Box>
+              </HStack>
+              <Button size="sm" variant="outline" colorScheme="blue">
+                Follow
+              </Button>
+            </HStack>
+          ))}
         {users.map((user, index) => (
           <HStack
             key={index}
