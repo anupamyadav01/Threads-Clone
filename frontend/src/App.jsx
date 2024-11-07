@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import UserPage from "./pages/UserPage/UserPage";
 import Header from "./components/Header/Header";
 import { Container, useColorMode, Box } from "@chakra-ui/react";
@@ -16,6 +16,7 @@ import Activity from "./pages/Activity/Activity";
 const App = () => {
   const { colorMode } = useColorMode();
   const user = useRecoilValue(userAtom);
+  const { pathname } = useLocation();
   return (
     <>
       <Header />
@@ -27,8 +28,7 @@ const App = () => {
         mt={4} /* Adds margin between Header and content */
       >
         <Container
-          maxW={`810px`}
-          // border={"0.5px solid"}
+          maxW={pathname === "/" ? { base: "700px", md: "950px" } : "700px"}
           borderColor={colorMode === "dark" ? "gray.600" : "gray.200"}
           borderTopRadius={"30px"}
           h="90vh" /* Fixed height for the container */

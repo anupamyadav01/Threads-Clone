@@ -21,7 +21,6 @@ import userAtom from "../../atoms/userAtom";
 import modalAtom from "../../atoms/modalAtom";
 import { useNavigate } from "react-router-dom";
 import useShowToast from "../../hooks/useShowToast";
-import { BsChatDotsFill } from "react-icons/bs";
 import { currentPageAtom } from "../../atoms/CurrentPageAtom";
 
 const Header = () => {
@@ -73,7 +72,7 @@ const Header = () => {
           src={colorMode === "dark" ? "/light-logo.svg" : "/dark-logo.svg"}
           onClick={toggleColorMode}
         />
-        <Text fontSize="2xl">{currentPage}</Text>
+        <Text fontSize="xl">{currentPage}</Text>
         <Box>
           {user ? (
             <LogoutButton />

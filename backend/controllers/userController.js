@@ -434,4 +434,37 @@ export const searchUser = async (req, res) => {
 };
 export const freezeAccount = async (req, res) => {};
 
-export const getSuggestedUsers = async (req, res) => {};
+export const getSuggestedUsers = async (req, res) => {
+  const user = req?.user;
+  try {
+    const userId = user._id;
+    const usersFollowedByMe = user?.following;
+
+    // Fetch suggested users
+    const suggestedUsers = await UserModel.aggregate([
+      {
+        $match: {
+          _id: { $ne: userId }, // Exclude current user
+        },
+      },
+      {
+        $sample: { size: 10 }, // Get a random sample of 10 users
+      },
+    ]);
+
+    // Filter out users that are already followed by the current user
+    const filteredUsers = suggestedUsers.filter(
+      (suggestedUser) =>
+        !usersFollowedByMe.some(
+          (followedUserId) =>
+            followedUserId.toString() === suggestedUser._id.toString()
+        )
+    );
+
+    // Return the filtered list of suggested users
+    res.status(200).send({ suggestedUsers: filteredUsers });
+  } catch (error) {
+    console.log("Error inside getSuggestedUsers usercontroller", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

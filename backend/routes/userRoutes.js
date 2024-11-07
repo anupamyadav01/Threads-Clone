@@ -39,7 +39,7 @@ userRoutes.put(
 
 userRoutes.get("/search", searchUser);
 
-// userRoutes.get("/suggested", protectRoute, getSuggestedUsers);
+userRoutes.get("/suggestedUsers", getUserDetails, getSuggestedUsers);
 // userRoutes.put("/freeze", protectRoute, freezeAccount);
 
 export default userRoutes;

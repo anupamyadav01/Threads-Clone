@@ -60,8 +60,6 @@ const ChatPage = () => {
       try {
         const res = await axiosInstance.get("/messages/conversations");
         const data = res?.data;
-        console.log(res);
-
         if (data.error) {
           showToast("Error", "hel", "error");
           return;
