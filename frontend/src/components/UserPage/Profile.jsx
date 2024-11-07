@@ -124,8 +124,9 @@ const Profile = () => {
           )}
           {loggedInUser?._id !== user?._id && (
             <Button
-              variant="outline"
-              w="100%"
+              size="sm"
+              variant="solid"
+              colorScheme={following ? "red" : "blue"}
               onClick={handleFollowUnfollow}
               isLoading={updating}
             >

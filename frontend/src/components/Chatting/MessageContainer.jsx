@@ -5,7 +5,6 @@ import {
   Image,
   Skeleton,
   SkeletonCircle,
-  Text,
   useColorModeValue,
 } from "@chakra-ui/react";
 
@@ -24,7 +23,9 @@ import userAtom from "../../atoms/userAtom.js";
 import { useSocket } from "../../context/SocketContext.jsx";
 import messageSound from "../../assets/sounds/message.mp3";
 import axiosInstance from "../../../axiosConfig.js";
+import { Link, useNavigate } from "react-router-dom";
 const MessageContainer = () => {
+  const navigate = useNavigate();
   const showToast = useShowToast();
   const selectedConversation = useRecoilValue(selectedConversationAtom);
   const [loadingMessages, setLoadingMessages] = useState(true);
@@ -139,12 +140,19 @@ const MessageContainer = () => {
       flexDirection={"column"}
     >
       {/* Message header */}
-      <Flex w={"full"} h={12} alignItems={"center"} gap={2}>
-        <Avatar src={selectedConversation.userProfilePic} size={"sm"} />
-        <Text display={"flex"} alignItems={"center"}>
-          {selectedConversation.username}{" "}
-          <Image src="/verified.png" w={4} h={4} ml={1} />
-        </Text>
+      <Flex w={"full"} h={12} alignItems={"center"} display={"flex"}>
+        <Avatar src={selectedConversation.userProfilePic} size={"sm"} mr={2} />
+        <Link
+          onClick={(e) => {
+            e.preventDefault();
+            navigate(`/${selectedConversation?.username}`);
+          }}
+          display={"flex"}
+          alignItems={"center"}
+        >
+          {selectedConversation?.username}{" "}
+        </Link>
+        <Image src="/verified.png" w={4} h={4} ml={1} />
       </Flex>
 
       <Divider />

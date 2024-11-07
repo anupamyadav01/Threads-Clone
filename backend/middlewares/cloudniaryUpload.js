@@ -19,14 +19,11 @@ export const uploadToCloudinary = async (req, res, next) => {
 
   try {
     // If user already has an image, destroy the old one
-    if (req.user && req.user.img) {
+    if (req?.user && req.user.img) {
       await cloudinary.uploader.destroy(
         req.user.img.split("/").pop().split(".")[0]
       );
     }
-
-    // Log the image data
-    // console.log("Uploading image:", img);
 
     // Upload new image
     const result = await cloudinary.uploader.upload(img, {
@@ -34,9 +31,8 @@ export const uploadToCloudinary = async (req, res, next) => {
       timeout: 120000, // Increase timeout for upload
     });
 
-    // console.log("Image uploaded to Cloudinary:", result.secure_url);
     req.secure_url = result.secure_url; // Store uploaded image URL in req
-    next(); // Move to the next middleware/controller
+    next();
   } catch (error) {
     console.error("Error in Cloudinary upload");
     console.error(error);

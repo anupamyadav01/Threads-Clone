@@ -1,15 +1,17 @@
 import { ConversationModel } from "../models/conversationModel.js";
 import MessageModel from "../models/messageModel.js";
 import { getRecipientSocketId, io } from "../socket/socket.js";
-
+import { v2 as cloudinary } from "cloudinary";
 async function sendMessage(req, res) {
   try {
     const { recieverId, message, img } = req.body;
-    const senderId = req.user._id;
+    const senderId = req?.user?._id;
+    const imgurl = req?.secure_url;
 
     let conversation = await ConversationModel.findOne({
       participants: { $all: [senderId, recieverId] },
     });
+
     if (!conversation) {
       conversation = new ConversationModel({
         participants: [senderId, recieverId],
@@ -25,6 +27,7 @@ async function sendMessage(req, res) {
       conversationId: conversation._id,
       sender: senderId,
       text: message,
+      img: imgurl || "",
     });
 
     await Promise.all([

@@ -59,18 +59,18 @@ const ChatPage = () => {
     const getConversations = async () => {
       try {
         const res = await axiosInstance.get("/messages/conversations");
-        const data = res.data; // Axios returns the data in res.data
+        const data = res?.data;
+        console.log(res);
+
         if (data.error) {
-          showToast("Error", data.error, "error");
+          showToast("Error", "hel", "error");
           return;
         }
         setConversations(data);
       } catch (error) {
-        showToast(
-          "Error",
-          error.response?.data?.message || error.message,
-          "error"
-        );
+        if (error.status === 401) {
+          showToast("Error", error?.response?.data?.error, "error");
+        }
       } finally {
         setLoadingConversations(false);
       }

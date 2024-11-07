@@ -1,6 +1,19 @@
 /* eslint-disable react/prop-types */
-import { Avatar, Box, Flex, Image, Skeleton, Text } from "@chakra-ui/react";
-
+import {
+  Avatar,
+  Box,
+  Flex,
+  Image,
+  Skeleton,
+  Text,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  useDisclosure,
+} from "@chakra-ui/react";
 import { useRecoilValue } from "recoil";
 import { BsCheck2All } from "react-icons/bs";
 import { useState } from "react";
@@ -12,6 +25,14 @@ const Message = ({ ownMessage, message }) => {
   const user = useRecoilValue(userAtom);
 
   const [imgLoaded, setImgLoaded] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure(); // Chakra UI Modal hooks
+  const [selectedImage, setSelectedImage] = useState("");
+
+  const handleImageClick = (img) => {
+    setSelectedImage(img);
+    onOpen();
+  };
+
   return (
     <>
       {ownMessage ? (
@@ -31,22 +52,36 @@ const Message = ({ ownMessage, message }) => {
               </Box>
             </Flex>
           )}
-          {message.img && !imgLoaded && (
-            <Flex mt={5} w={"200px"}>
+          {message?.img && !imgLoaded && (
+            <Flex mt={5}>
               <Image
-                src={message.img}
+                src={message?.img}
                 hidden
                 onLoad={() => setImgLoaded(true)}
                 alt="Message image"
                 borderRadius={4}
+                maxW={"250px"} // Increased width
+                maxH={"250px"} // Increased height
+                objectFit="cover"
+                cursor="pointer"
+                onClick={() => handleImageClick(message?.img)} // Open the modal when clicked
               />
-              <Skeleton w={"200px"} h={"200px"} />
+              <Skeleton w={"250px"} h={"250px"} />
             </Flex>
           )}
 
           {message?.img && imgLoaded && (
-            <Flex mt={5} w={"200px"}>
-              <Image src={message.img} alt="Message image" borderRadius={4} />
+            <Flex mt={5}>
+              <Image
+                src={message.img}
+                alt="Message image"
+                borderRadius={4}
+                maxW={"250px"} // Increased width
+                maxH={"250px"} // Increased height
+                objectFit="cover"
+                cursor="pointer"
+                onClick={() => handleImageClick(message.img)} // Open the modal when clicked
+              />
               <Box
                 alignSelf={"flex-end"}
                 ml={1}
@@ -77,25 +112,62 @@ const Message = ({ ownMessage, message }) => {
             </Text>
           )}
           {message.img && !imgLoaded && (
-            <Flex mt={5} w={"200px"}>
+            <Flex mt={5} w={"250px"}>
+              {" "}
+              {/* Increased width */}
               <Image
                 src={message.img}
                 hidden
                 onLoad={() => setImgLoaded(true)}
                 alt="Message image"
                 borderRadius={4}
+                maxW={"250px"} // Increased width
+                maxH={"250px"} // Increased height
+                objectFit="cover"
+                cursor="pointer"
+                onClick={() => handleImageClick(message.img)} // Open the modal when clicked
               />
-              <Skeleton w={"200px"} h={"200px"} />
+              <Skeleton w={"250px"} h={"250px"} />
             </Flex>
           )}
 
           {message?.img && imgLoaded && (
-            <Flex mt={5} w={"200px"}>
-              <Image src={message.img} alt="Message image" borderRadius={4} />
+            <Flex mt={5} w={"250px"}>
+              {" "}
+              {/* Increased width */}
+              <Image
+                src={message.img}
+                alt="Message image"
+                borderRadius={4}
+                maxW={"250px"} // Increased width
+                maxH={"250px"} // Increased height
+                objectFit="cover"
+                cursor="pointer"
+                onClick={() => handleImageClick(message.img)} // Open the modal when clicked
+              />
             </Flex>
           )}
         </Flex>
       )}
+
+      {/* Modal for showing larger image */}
+      <Modal isOpen={isOpen} onClose={onClose} size="xl">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Image Preview</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Image
+              src={selectedImage}
+              alt="Large Image Preview"
+              borderRadius={4}
+              width="100%" // Make it responsive
+              height="auto" // Adjust height automatically
+              maxHeight="80vh" // Limit height to 80% of the viewport height
+            />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </>
   );
 };

@@ -9,7 +9,7 @@ export const getUserDetails = async (req, res, next) => {
 
     if (!token) {
       return res.status(401).json({
-        error: "Token is required.",
+        error: "Token Expired!! Please login again...",
       });
     }
 

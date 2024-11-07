@@ -46,11 +46,13 @@ const MessageInput = ({ setMessages }) => {
     try {
       const res = await axiosInstance.post("/messages", {
         message: messageText,
-        recieverId: selectedConversation.userId,
+        recieverId: selectedConversation?.userId,
         img: imgUrl,
       });
 
-      const data = res.data; // The data should now come from res.data
+      const data = res.data;
+      console.log(data);
+
       if (data.error) {
         showToast("Error", data.error, "error");
         return;
