@@ -132,8 +132,8 @@ const MessageContainer = () => {
 
   return (
     <Flex
-      flex="70"
-      bg={useColorModeValue("gray.200", "gray.dark")}
+      flex="50"
+      bg={useColorModeValue("gray.200", "gray.700")}
       borderRadius={"md"}
       p={2}
       flexDirection={"column"}
@@ -151,10 +151,10 @@ const MessageContainer = () => {
 
       <Flex
         flexDir={"column"}
-        gap={4}
+        gap={6}
         my={4}
         p={2}
-        height={"400px"}
+        height={"500px"}
         overflowY={"auto"}
       >
         {loadingMessages &&

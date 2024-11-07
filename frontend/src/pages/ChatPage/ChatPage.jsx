@@ -140,9 +140,10 @@ const ChatPage = () => {
 
   return (
     <Box
+      bg={useColorModeValue("gray.200", "gray.700")}
       position={"absolute"}
       left={"50%"}
-      w={{ base: "100%", md: "80%", lg: "750px" }}
+      w={{ base: "100%", md: "70%" }}
       p={4}
       transform={"translateX(-50%)"}
     >
@@ -222,7 +223,7 @@ const ChatPage = () => {
             flexDir={"column"}
             alignItems={"center"}
             justifyContent={"center"}
-            height={"400px"}
+            height={"600px"}
           >
             <GiConversation size={100} />
             <Text fontSize={20}>Select a conversation to start messaging</Text>
