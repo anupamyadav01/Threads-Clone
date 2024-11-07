@@ -64,7 +64,6 @@ const ChatPage = () => {
           showToast("Error", data.error, "error");
           return;
         }
-        console.log("chatted users", data);
         setConversations(data);
       } catch (error) {
         showToast(
@@ -86,7 +85,7 @@ const ChatPage = () => {
 
     try {
       const res = await axiosInstance.get(`/user/profile/${searchText}`);
-      const searchedUser = res.data?.user; // Accessing the correct user object
+      const searchedUser = res?.data?.user;
 
       console.log(res);
 
@@ -133,11 +132,7 @@ const ChatPage = () => {
 
       setConversations((prevConvs) => [...prevConvs, mockConversation]);
     } catch (error) {
-      showToast(
-        "Error",
-        error.response?.data?.message || error.message,
-        "error"
-      );
+      showToast("Error", error?.response?.data?.error, "error");
     } finally {
       setSearchingUser(false);
     }

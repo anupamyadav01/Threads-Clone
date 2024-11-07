@@ -46,7 +46,7 @@ const MessageInput = ({ setMessages }) => {
     try {
       const res = await axiosInstance.post("/messages", {
         message: messageText,
-        recipientId: selectedConversation.userId,
+        recieverId: selectedConversation.userId,
         img: imgUrl,
       });
 

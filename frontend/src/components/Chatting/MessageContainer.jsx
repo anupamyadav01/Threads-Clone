@@ -33,7 +33,6 @@ const MessageContainer = () => {
   const { socket } = useSocket();
   const setConversations = useSetRecoilState(conversationsAtom);
   const messageEndRef = useRef(null);
-  console.log("messages", messages);
 
   useEffect(() => {
     socket.on("newMessage", (message) => {
@@ -109,11 +108,10 @@ const MessageContainer = () => {
         if (selectedConversation.mock) return;
 
         const res = await axiosInstance.get(
-          `/messages/${selectedConversation.userId}`
+          `/messages/${selectedConversation?.userId}`
         );
         const data = res.data;
-
-        if (data.error) {
+        if (data?.error) {
           showToast("Error", data.error, "error");
           return;
         }
