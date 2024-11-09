@@ -94,12 +94,10 @@ const Profile = () => {
       <Flex
         width="100%"
         p={4}
-        justifyContent={"space-around "}
         borderRadius="lg"
         bg={colorMode === "dark" ? "gray.800" : "white"}
       >
-        {/* Right - Avatar and Action Button (placed on top on small screens) */}
-        <VStack align="center" spacing={4} mb={{ base: 4, sm: 0 }}>
+        <VStack flex={1} spacing={4} mb={{ base: 4, sm: 0 }}>
           <Avatar
             size={{ base: "xl", sm: "2xl" }}
             src={user?.profilePic}
@@ -122,7 +120,7 @@ const Profile = () => {
         </VStack>
 
         {/* Left - User info (below avatar on small screens) */}
-        <VStack spacing={2}>
+        <VStack spacing={2} flex={2} p={3}>
           <Text fontWeight="medium" fontSize={{ base: "lg", md: "2xl" }}>
             {user?.name}
           </Text>

@@ -1,5 +1,4 @@
 /* eslint-disable react/prop-types */
-import { useState } from "react";
 import { Avatar } from "@chakra-ui/avatar";
 import { Image } from "@chakra-ui/image";
 import { Box, Flex, Text } from "@chakra-ui/layout";
@@ -12,20 +11,20 @@ import postsAtom from "../../atoms/postsAtom";
 import Actions from "../Actions";
 import useShowToast from "../../hooks/useShowToast";
 import axiosInstance from "../../../axiosConfig";
+import { useState } from "react";
 
 const Post = ({ post, postedBy }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
   const showToast = useShowToast();
   const currentUser = useRecoilValue(userAtom);
   const [posts, setPosts] = useRecoilState(postsAtom);
   const navigate = useNavigate();
   const { colorMode } = useColorMode();
 
-  // State to manage "Show more" functionality
-  const [isExpanded, setIsExpanded] = useState(false);
-
   const handleDeletePost = async (e) => {
     try {
       e.preventDefault();
+
       if (!window.confirm("Are you sure you want to delete this post?")) return;
 
       const res = await axiosInstance.delete(`/post/${post._id}`);
@@ -35,6 +34,7 @@ const Post = ({ post, postedBy }) => {
         return;
       }
       showToast("Success", "Post deleted", "success");
+
       setPosts(posts.filter((p) => p._id !== post._id));
     } catch (error) {
       showToast(
@@ -49,17 +49,17 @@ const Post = ({ post, postedBy }) => {
     <Link to={`/${postedBy.username}/post/${post._id}`}>
       <Flex
         gap={3}
-        mb={4}
-        py={12}
-        px={12}
+        mb={6}
         bg={colorMode === "dark" ? "gray.800" : "white"}
         borderRadius="md"
         border={"1px"}
+        p={{ base: 2, md: 10 }}
+        pb={{ base: 10 }}
         borderColor={colorMode === "dark" ? "gray.600" : "gray.400"}
       >
         <Flex flexDirection="column" alignItems="center">
           <Avatar
-            size="md"
+            size={"sm"}
             name={postedBy.name}
             src={postedBy?.profilePic || "/default-avatar.png"}
             onClick={(e) => {
@@ -75,13 +75,52 @@ const Post = ({ post, postedBy }) => {
             my={2}
             border={"0.5px solid gray"}
           ></Box>
+          <Box position={"relative"} w={"full"}>
+            {post?.replies?.length === 0 && (
+              <Text textAlign={"center"}>🥱</Text>
+            )}
+            {post?.replies[0] && (
+              <Avatar
+                size="xs"
+                name="John doe"
+                src={post?.replies[0].userProfilePic}
+                position={"absolute"}
+                top={"0px"}
+                left="15px"
+                padding={"2px"}
+              />
+            )}
+
+            {post?.replies[1] && (
+              <Avatar
+                size="xs"
+                name="John doe"
+                src={post?.replies[1].userProfilePic}
+                position={"absolute"}
+                bottom={"0px"}
+                right="-5px"
+                padding={"2px"}
+              />
+            )}
+
+            {post?.replies[2] && (
+              <Avatar
+                size="xs"
+                name="John doe"
+                src={post?.replies[2].userProfilePic}
+                position={"absolute"}
+                bottom={"0px"}
+                left="4px"
+                padding={"2px"}
+              />
+            )}
+          </Box>
         </Flex>
 
         <Flex flex={1} flexDirection="column" gap={2}>
           <Flex justifyContent="space-between" w="full" mb={4}>
             <Flex w="full" alignItems="center">
               <Text
-                pt={2}
                 fontSize="base"
                 fontWeight="medium"
                 cursor="pointer"
@@ -116,17 +155,19 @@ const Post = ({ post, postedBy }) => {
           </Flex>
 
           <Text
-            fontSize="base"
-            color={colorMode === "dark" ? "gray.300" : "gray.600"}
+            fontSize={{ base: "sm", md: "md" }}
+            color="gray.700"
+            _dark={{ color: "gray.300" }}
+            mb={4}
           >
-            {post?.content.length > 100 ? (
+            {post?.content?.length > 100 ? (
               <>
-                {isExpanded
-                  ? post.content
-                  : `${post.content.slice(0, 100)}... `}
+                {isExpanded ? post.content : `${post.content.slice(0, 60)}...`}
                 <Text
                   as="span"
                   color="blue.500"
+                  ml={2}
+                  fontWeight="medium"
                   cursor="pointer"
                   onClick={(e) => {
                     e.preventDefault();
@@ -142,8 +183,14 @@ const Post = ({ post, postedBy }) => {
           </Text>
 
           {post?.img && (
-            <Box borderRadius={6} overflow="hidden">
-              <Image src={post?.img} w="full" />
+            <Box borderRadius="md" overflow="hidden" mb={4}>
+              <Image
+                src={post?.img}
+                w={{ base: "100%", sm: "80%", md: "60%", lg: "100%" }}
+                maxH={{ base: "200px", md: "300px" }}
+                objectFit="cover"
+                mx="auto"
+              />
             </Box>
           )}
 

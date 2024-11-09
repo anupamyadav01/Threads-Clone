@@ -5,7 +5,7 @@ import useShowToast from "../../hooks/useShowToast";
 import { useParams } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import postsAtom from "../../atoms/postsAtom";
-import { Flex, Spinner, Text } from "@chakra-ui/react";
+import { Flex, Spinner, Text, Box } from "@chakra-ui/react";
 import Post from "../../components/Post/Post";
 
 const UserPage = () => {
@@ -13,9 +13,9 @@ const UserPage = () => {
   const { username } = useParams();
   const [user, setUser] = useState([[]]);
   const [loading, setLoading] = useState(true);
-
   const [posts, setPosts] = useRecoilState(postsAtom);
   const [fetchingPosts, setFetchingPosts] = useState(true);
+
   useEffect(() => {
     const getPosts = async () => {
       if (!user) return;
@@ -62,48 +62,56 @@ const UserPage = () => {
 
   if (loading) {
     return (
-      <Flex height={"100vh"} justifyContent={"center"} alignItems={"center"}>
-        <Spinner size={"xl"} />
+      <Flex height="100vh" justify="center" align="center">
+        <Spinner size="xl" />
       </Flex>
     );
   }
+
   if (!user && loading) {
     return (
-      <Flex justifyContent={"center"} alignItems={"center"} height={"100vh"}>
-        <Spinner size={"xl"} />
+      <Flex justify="center" align="center" height="100vh">
+        <Spinner size="xl" />
       </Flex>
     );
   }
 
   if (!user && !loading)
     return (
-      <Flex
-        w={"full"}
-        height={"100vh"}
-        justifyContent={"center"}
-        alignItems={"center"}
-      >
-        <h1>User not found</h1>
+      <Flex w="full" height="100vh" justify="center" align="center">
+        <Text fontSize={{ base: "lg", md: "xl" }}>User not found</Text>
       </Flex>
     );
 
   return (
-    <>
+    <Box px={{ base: 4, md: 8 }} py={{ base: 6, md: 12 }}>
+      {/* Profile component */}
       <Profile />
+
+      {/* No posts message */}
       {!fetchingPosts && posts.length === 0 && (
-        <Flex justifyContent={"center"}>
-          <Text fontSize={"30px"}>User has not posts.</Text>
+        <Flex justify="center" mt={6}>
+          <Text fontSize={{ base: "lg", md: "2xl" }} textAlign="center">
+            User has no posts.
+          </Text>
         </Flex>
       )}
+
+      {/* Loading spinner for posts */}
       {fetchingPosts && (
-        <Flex justifyContent={"center"} my={12}>
-          <Spinner size={"xl"} />
+        <Flex justify="center" my={12}>
+          <Spinner size="xl" />
         </Flex>
       )}
-      {posts?.map((post) => (
-        <Post key={post._id} post={post} postedBy={post.postedBy} />
-      ))}
-    </>
+
+      {/* Posts list */}
+      <Box mt={6} w="full">
+        {posts?.map((post) => (
+          <Post key={post._id} post={post} postedBy={post.postedBy} />
+        ))}
+      </Box>
+    </Box>
   );
 };
+
 export default UserPage;
