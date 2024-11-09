@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import { Avatar, Divider, Flex, Text } from "@chakra-ui/react";
+import { Link } from "react-router-dom";
 
 const Comment = ({ reply, lastReply }) => {
   return (
@@ -12,9 +13,13 @@ const Comment = ({ reply, lastReply }) => {
             justifyContent={"space-between"}
             alignItems={"center"}
           >
-            <Text fontSize="sm" fontWeight="bold">
+            <Link
+              to={`/${reply?.userId?.username}`}
+              fontSize="sm"
+              fontWeight="bold"
+            >
               {reply?.userId?.username}
-            </Text>
+            </Link>
           </Flex>
           <Text>{reply?.replyText}</Text>
         </Flex>
