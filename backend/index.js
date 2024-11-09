@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 10000;
 
 app.use(
   cors({
-    origin: "https://threads-bro.vercel.app",
+    origin: ["https://threads-bro.vercel.app", "http://localhost:5173"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
