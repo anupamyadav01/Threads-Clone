@@ -68,7 +68,7 @@ const Conversation = ({ conversation, isOnline }) => {
       borderRadius={"md"}
     >
       <WrapItem>
-        <Avatar size={{ base: "xs", sm: "sm", md: "md" }} src={user.profilePic}>
+        <Avatar size={{ base: "md", md: "lg" }} src={user.profilePic}>
           {isOnline ? <AvatarBadge boxSize="1em" bg="green.500" /> : ""}
         </Avatar>
       </WrapItem>

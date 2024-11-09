@@ -157,6 +157,8 @@ const ChatPage = () => {
         pb={8}
       >
         <Flex
+          mx={5}
+          p={4}
           flex={30}
           gap={4}
           flexDirection={"column"}
@@ -172,6 +174,7 @@ const ChatPage = () => {
           <form onSubmit={handleConversationSearch}>
             <Flex alignItems={"center"} gap={2}>
               <Input
+                p={2}
                 placeholder="Search for a user"
                 onChange={(e) => setSearchText(e.target.value)}
                 variant="flushed"

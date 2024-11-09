@@ -136,7 +136,10 @@ const MessageContainer = () => {
       flex="50"
       bg={useColorModeValue("gray.200", "gray.700")}
       borderRadius={"md"}
-      p={2}
+      px={5}
+      mx={5}
+      overflowY={"hidden"}
+      pb={6}
       flexDirection={"column"}
     >
       {/* Message header */}

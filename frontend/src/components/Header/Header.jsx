@@ -170,8 +170,7 @@ const Header = () => {
         width="90%"
         justifyContent="space-around"
         bg={colorMode === "dark" ? "gray.800" : "white"}
-        p={2}
-        borderRadius="md"
+        p={1}
         display={{ base: "flex", md: "none" }}
         alignItems="center"
       >
