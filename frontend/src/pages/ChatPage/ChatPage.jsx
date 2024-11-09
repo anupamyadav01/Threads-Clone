@@ -7,6 +7,7 @@ import {
   Skeleton,
   SkeletonCircle,
   Text,
+  useColorMode,
   useColorModeValue,
 } from "@chakra-ui/react";
 import { GiConversation } from "react-icons/gi";
@@ -24,6 +25,7 @@ import axiosInstance from "../../../axiosConfig";
 import Conversation from "../../components/Chatting/Conversation";
 
 const ChatPage = () => {
+  const { colorMode } = useColorMode();
   const [searchingUser, setSearchingUser] = useState(false);
   const [loadingConversations, setLoadingConversations] = useState(true);
   const [searchText, setSearchText] = useState("");
@@ -138,32 +140,32 @@ const ChatPage = () => {
 
   return (
     <Box
-      bg={useColorModeValue("gray.200", "gray.700")}
+      mt={"60px"}
+      bg={useColorModeValue("gray.50", "gray.800")}
       position={"absolute"}
       left={"50%"}
-      w={{ base: "100%", md: "70%" }}
-      p={4}
+      w={{ base: "100%", md: "75%" }}
       transform={"translateX(-50%)"}
+      borderRadius="lg"
+      boxShadow="md"
     >
       <Flex
         gap={4}
         flexDirection={{ base: "column", md: "row" }}
-        maxW={{
-          sm: "400px",
-          md: "full",
-        }}
+        maxW={{ sm: "400px", md: "full" }}
         mx={"auto"}
+        pb={8}
       >
         <Flex
           flex={30}
-          gap={2}
+          gap={4}
           flexDirection={"column"}
           maxW={{ sm: "250px", md: "full" }}
-          mx={"auto"}
         >
           <Text
             fontWeight={700}
-            color={useColorModeValue("gray.600", "gray.400")}
+            fontSize="xl"
+            color={useColorModeValue("gray.800", "gray.100")}
           >
             Your Conversations
           </Text>
@@ -172,11 +174,15 @@ const ChatPage = () => {
               <Input
                 placeholder="Search for a user"
                 onChange={(e) => setSearchText(e.target.value)}
+                variant="flushed"
+                _focus={{ borderColor: "blue.500" }}
               />
               <Button
                 size={"sm"}
                 onClick={handleConversationSearch}
                 isLoading={searchingUser}
+                colorScheme="blue"
+                variant="solid"
               >
                 <SearchIcon />
               </Button>
@@ -189,7 +195,7 @@ const ChatPage = () => {
                 key={i}
                 gap={4}
                 alignItems={"center"}
-                p={"1"}
+                p={"2"}
                 borderRadius={"md"}
               >
                 <Box>
@@ -203,16 +209,17 @@ const ChatPage = () => {
             ))}
 
           {!loadingConversations &&
-            conversations.map((conversation) => (
+            conversations?.map((conversation) => (
               <Conversation
-                key={conversation._id}
-                isOnline={onlineUsers.includes(
+                key={conversation?._id}
+                isOnline={onlineUsers?.includes(
                   conversation?.participants[0]?._id
                 )}
                 conversation={conversation}
               />
             ))}
         </Flex>
+
         {!selectedConversation?._id && (
           <Flex
             flex={70}
@@ -222,9 +229,16 @@ const ChatPage = () => {
             alignItems={"center"}
             justifyContent={"center"}
             height={"600px"}
+            bg={colorMode === "dark" ? "gray.800" : "white"}
+            boxShadow="md"
           >
             <GiConversation size={100} />
-            <Text fontSize={20}>Select a conversation to start messaging</Text>
+            <Text
+              fontSize={20}
+              bg={colorMode === "dark" ? "gray.800" : "white"}
+            >
+              Select a conversation to start messaging
+            </Text>
           </Flex>
         )}
 

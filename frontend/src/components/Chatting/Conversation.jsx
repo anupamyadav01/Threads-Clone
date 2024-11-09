@@ -23,7 +23,35 @@ const Conversation = ({ conversation, isOnline }) => {
   const [selectedConversation, setSelectedConversation] = useRecoilState(
     selectedConversationAtom
   );
-  const colorMode = useColorMode();
+  const { colorMode } = useColorMode(); // Access color mode here
+
+  const handleConversationSelect = () => {
+    setSelectedConversation({
+      _id: conversation._id,
+      userId: user._id,
+      userProfilePic: user.profilePic,
+      username: user.username,
+      mock: conversation.mock,
+    });
+  };
+
+  const isSelected = selectedConversation?._id === conversation._id;
+
+  // Use colorMode to toggle the background and text color
+  const bgColor = isSelected
+    ? colorMode === "dark"
+      ? "gray.700"
+      : "gray.300"
+    : colorMode === "dark"
+    ? "gray.800"
+    : "white";
+
+  const textColor = isSelected
+    ? colorMode === "dark"
+      ? "white"
+      : "black"
+    : "inherit";
+
   return (
     <Flex
       gap={4}
@@ -31,43 +59,23 @@ const Conversation = ({ conversation, isOnline }) => {
       p={"1"}
       _hover={{
         cursor: "pointer",
-        bg: useColorModeValue("gray.600", "gray.dark"),
+        bg: useColorModeValue("gray.600", "gray.700"),
         color: "white",
       }}
-      onClick={() =>
-        setSelectedConversation({
-          _id: conversation._id,
-          userId: user?._id,
-          userProfilePic: user?.profilePic,
-          username: user?.username,
-          mock: conversation?.mock,
-        })
-      }
-      bg={
-        selectedConversation?._id === conversation?._id
-          ? colorMode === "light"
-            ? "gray.400"
-            : "gray.dark"
-          : ""
-      }
+      onClick={handleConversationSelect}
+      bg={bgColor} // Conditional background color based on selection and color mode
+      color={textColor} // Conditional text color based on selection and color mode
       borderRadius={"md"}
     >
       <WrapItem>
-        <Avatar
-          size={{
-            base: "xs",
-            sm: "sm",
-            md: "md",
-          }}
-          src={user?.profilePic}
-        >
+        <Avatar size={{ base: "xs", sm: "sm", md: "md" }} src={user.profilePic}>
           {isOnline ? <AvatarBadge boxSize="1em" bg="green.500" /> : ""}
         </Avatar>
       </WrapItem>
 
       <Stack direction={"column"} fontSize={"sm"}>
         <Text fontWeight="700" display={"flex"} alignItems={"center"}>
-          {user?.username} <Image src="/verified.png" w={4} h={4} ml={1} />
+          {user.username} <Image src="/verified.png" w={4} h={4} ml={1} />
         </Text>
         <Text fontSize={"xs"} display={"flex"} alignItems={"center"} gap={1}>
           {currentUser._id === lastMessage.sender ? (

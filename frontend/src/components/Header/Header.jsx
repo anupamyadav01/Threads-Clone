@@ -56,7 +56,7 @@ const Header = () => {
   };
 
   return (
-    <Box position="relative" border={"2px"}>
+    <Box position="relative">
       {/* Responsive Header */}
       <Flex
         zIndex={100}

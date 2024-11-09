@@ -41,7 +41,6 @@ const HomePage = () => {
 
   return (
     <Flex
-      // height={"100vh"}
       mt={"60px"}
       direction={{ base: "column", md: "row" }}
       justify="center"
