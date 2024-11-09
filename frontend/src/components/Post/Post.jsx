@@ -1,4 +1,5 @@
 /* eslint-disable react/prop-types */
+import { useState } from "react";
 import { Avatar } from "@chakra-ui/avatar";
 import { Image } from "@chakra-ui/image";
 import { Box, Flex, Text } from "@chakra-ui/layout";
@@ -19,10 +20,12 @@ const Post = ({ post, postedBy }) => {
   const navigate = useNavigate();
   const { colorMode } = useColorMode();
 
+  // State to manage "Show more" functionality
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const handleDeletePost = async (e) => {
     try {
       e.preventDefault();
-
       if (!window.confirm("Are you sure you want to delete this post?")) return;
 
       const res = await axiosInstance.delete(`/post/${post._id}`);
@@ -32,7 +35,6 @@ const Post = ({ post, postedBy }) => {
         return;
       }
       showToast("Success", "Post deleted", "success");
-
       setPosts(posts.filter((p) => p._id !== post._id));
     } catch (error) {
       showToast(
@@ -73,46 +75,6 @@ const Post = ({ post, postedBy }) => {
             my={2}
             border={"0.5px solid gray"}
           ></Box>
-          <Box position={"relative"} w={"full"}>
-            {post?.replies?.length === 0 && (
-              <Text textAlign={"center"}>🥱</Text>
-            )}
-            {post?.replies[0] && (
-              <Avatar
-                size="xs"
-                name="John doe"
-                src={post?.replies[0].userProfilePic}
-                position={"absolute"}
-                top={"0px"}
-                left="15px"
-                padding={"2px"}
-              />
-            )}
-
-            {post?.replies[1] && (
-              <Avatar
-                size="xs"
-                name="John doe"
-                src={post?.replies[1].userProfilePic}
-                position={"absolute"}
-                bottom={"0px"}
-                right="-5px"
-                padding={"2px"}
-              />
-            )}
-
-            {post?.replies[2] && (
-              <Avatar
-                size="xs"
-                name="John doe"
-                src={post?.replies[2].userProfilePic}
-                position={"absolute"}
-                bottom={"0px"}
-                left="4px"
-                padding={"2px"}
-              />
-            )}
-          </Box>
         </Flex>
 
         <Flex flex={1} flexDirection="column" gap={2}>
@@ -157,7 +119,26 @@ const Post = ({ post, postedBy }) => {
             fontSize="base"
             color={colorMode === "dark" ? "gray.300" : "gray.600"}
           >
-            {post?.content}
+            {post?.content.length > 100 ? (
+              <>
+                {isExpanded
+                  ? post.content
+                  : `${post.content.slice(0, 100)}... `}
+                <Text
+                  as="span"
+                  color="blue.500"
+                  cursor="pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsExpanded(!isExpanded);
+                  }}
+                >
+                  {isExpanded ? "Show less" : "Show more"}
+                </Text>
+              </>
+            ) : (
+              post.content
+            )}
           </Text>
 
           {post?.img && (

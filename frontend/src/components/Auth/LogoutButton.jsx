@@ -1,4 +1,4 @@
-import { Button } from "@chakra-ui/button";
+import { Button } from "@chakra-ui/react";
 import { useSetRecoilState } from "recoil";
 import { FiLogOut } from "react-icons/fi";
 import userAtom from "../../atoms/userAtom";
@@ -13,10 +13,7 @@ const LogoutButton = () => {
 
   const handleLogout = async () => {
     try {
-      // Send POST request to logout endpoint using axios
       const res = await axiosInstance.post("/user/logout");
-
-      console.log(res);
 
       if (res?.data?.error) {
         showToast("Error", res.data.error, "error");
@@ -29,7 +26,6 @@ const LogoutButton = () => {
 
       showToast("Success", "Logged out successfully", "success");
     } catch (error) {
-      // Handle errors from the request and response
       showToast(
         "Error",
         error?.response?.data?.error || error.message || "Logout failed",
@@ -40,13 +36,13 @@ const LogoutButton = () => {
 
   return (
     <Button
-      position={"fixed"}
-      top={"30px"}
-      right={"30px"}
-      size={"sm"}
+      size={{ base: "md", md: "lg" }}
       onClick={handleLogout}
+      leftIcon={<FiLogOut />}
+      variant="ghost"
+      ml={{ base: 2, md: 4 }}
     >
-      <FiLogOut size={20} />
+      Logout
     </Button>
   );
 };

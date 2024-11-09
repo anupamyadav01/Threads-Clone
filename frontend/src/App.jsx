@@ -20,19 +20,13 @@ const App = () => {
   return (
     <>
       <Header />
-      <Box
-        position={"relative"}
-        width={"full"}
-        display="flex"
-        justifyContent="center"
-        mt={4} /* Adds margin between Header and content */
-      >
+      <Box width={"full"} display="flex" justifyContent="center">
         <Container
           maxW={pathname === "/" ? { base: "700px", md: "950px" } : "700px"}
           borderColor={colorMode === "dark" ? "gray.600" : "gray.200"}
           borderTopRadius={"30px"}
-          h="90vh" /* Fixed height for the container */
-          overflow="hidden" /* Prevents content from overflowing */
+          height={"100%"}
+          overflow="hidden"
         >
           <Box
             h="100%"

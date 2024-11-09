@@ -25,11 +25,12 @@ const HomePage = () => {
     };
     fetchPosts();
   }, [setPosts]);
+
   // Conditional Rendering based on loading, error, and posts state
   if (loading) {
     return (
-      <Flex height={"100vh"} justifyContent={"center"} alignItems={"center"}>
-        <Spinner size={"xl"} />
+      <Flex height="100vh" justifyContent="center" alignItems="center">
+        <Spinner size="xl" />
       </Flex>
     );
   }
@@ -39,8 +40,15 @@ const HomePage = () => {
   }
 
   return (
-    <Flex justify="center" justifyContent={"space-between"} gap={10}>
-      <Box flex={70}>
+    <Flex
+      // height={"100vh"}
+      mt={"60px"}
+      direction={{ base: "column", md: "row" }}
+      justify="center"
+      justifyContent="space-between"
+      gap={5}
+    >
+      <Box>
         {/* List of Posts */}
         {posts.length > 0 ? (
           posts.map((post) => (
@@ -50,7 +58,7 @@ const HomePage = () => {
           <Text>No posts to show</Text>
         )}
       </Box>
-      <Box flex={30}>
+      <Box flex={{ base: "100%", md: "20%" }}>
         <SuggestedUsers />
       </Box>
     </Flex>
