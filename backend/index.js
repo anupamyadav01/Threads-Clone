@@ -11,25 +11,18 @@ import { app, server } from "./socket/socket.js";
 // Load environment variables from the .env file
 dotenv.config();
 
-// Connect to MongoDB Atlas
-connectToMongoDB();
-
 const PORT = process.env.PORT || 10000;
-
-// Dynamically set CORS origin based on environment
-const CLIENT_URL =
-  process.env.NODE_ENV === "production"
-    ? "https://threads-bro.vercel.app"
-    : "http://localhost:5173";
-
 app.use(
   cors({
-    origin: CLIENT_URL,
+    origin: ["https://threads-bro.vercel.app", "http://localhost:5173"],
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: "GET,POST,PUT,DELETE",
     allowedHeaders: ["Content-Type", "Authorization"],
+    optionsSuccessStatus: 200,
   })
 );
+
+connectToMongoDB();
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true }));
