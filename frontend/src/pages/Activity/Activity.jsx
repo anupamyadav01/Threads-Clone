@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
 import {
   Box,
@@ -5,17 +6,10 @@ import {
   VStack,
   HStack,
   Avatar,
-  Button,
   IconButton,
   useColorMode,
 } from "@chakra-ui/react";
-import {
-  IoMdNotifications,
-  IoMdHeart,
-  IoMdChatbubbles,
-  IoMdPersonAdd,
-  IoMdAlert,
-} from "react-icons/io";
+import { IoMdNotifications } from "react-icons/io";
 
 const ActivitiesPage = () => {
   const { colorMode } = useColorMode();
@@ -69,36 +63,22 @@ const ActivitiesPage = () => {
     setNotifications(dummyNotifications);
   }, []);
 
-  const getNotificationIcon = (type) => {
-    switch (type) {
-      case "follow":
-        return <IoMdPersonAdd color="blue.400" size="24px" />;
-      case "like":
-        return <IoMdHeart color="red.400" size="24px" />;
-      case "comment":
-        return <IoMdChatbubbles color="green.400" size="24px" />;
-      case "mention":
-        return <IoMdAlert color="purple.400" size="24px" />;
-      default:
-        return <IoMdNotifications />;
-    }
-  };
-
   return (
     <Box
-      p={6}
-      maxW="600px"
+      p={{ base: 4, md: 6 }}
+      maxW={{ base: "100%", md: "600px" }}
       mx="auto"
       bg={colorMode === "dark" ? "gray.900" : "white"}
       color={colorMode === "dark" ? "gray.300" : "gray.700"}
       borderRadius="md"
       shadow="lg"
     >
-      <Text color={"red"} size={"20px"}>
+      <Text fontSize={{ base: "sm", md: "md" }} color="red.500" mb={4}>
         This Page is Under Development Work and All Data Is Dummy.
       </Text>
+
       <HStack justify="space-between" align="center" mb={6}>
-        <Text fontSize="2xl" fontWeight="bold">
+        <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold">
           Notifications
         </Text>
         <IconButton
@@ -121,13 +101,8 @@ const ActivitiesPage = () => {
               transition="background 0.2s ease"
             >
               <HStack spacing={4}>
-                {/* Notification Icon */}
-                <Box>{getNotificationIcon(notification.type)}</Box>
-
-                {/* User Info */}
                 <Avatar size="md" src={notification.profilePic} />
 
-                {/* Message and Timestamp */}
                 <Box flex="1">
                   <HStack justify="space-between">
                     <Text
@@ -145,18 +120,13 @@ const ActivitiesPage = () => {
                     {notification.message}
                   </Text>
                 </Box>
-
-                {/* Follow Button for follow notifications */}
-                {notification.type === "follow" && (
-                  <Button size="sm" colorScheme="blue" variant="outline">
-                    Follow Back
-                  </Button>
-                )}
               </HStack>
             </Box>
           ))
         ) : (
-          <Text>No notifications to show.</Text>
+          <Text textAlign="center" color="gray.500">
+            No notifications to show.
+          </Text>
         )}
       </VStack>
     </Box>

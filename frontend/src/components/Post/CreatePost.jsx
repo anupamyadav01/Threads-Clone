@@ -14,9 +14,9 @@ import {
   ModalOverlay,
   Text,
   Textarea,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { useRef, useState } from "react";
-
 import { BsFillImageFill } from "react-icons/bs";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { useNavigate, useParams } from "react-router-dom";
@@ -62,7 +62,7 @@ const CreatePost = () => {
         img: imgUrl,
       });
 
-      const data = res.data; // axios automatically parses JSON
+      const data = res.data;
       console.log(data);
 
       if (data.error) {
@@ -76,12 +76,11 @@ const CreatePost = () => {
         setPosts([data, ...posts]);
       }
 
-      setIsOpen(false); // Close modal
+      setIsOpen(false);
       setPostText("");
       setImgUrl("");
       navigate("/");
     } catch (error) {
-      // axios returns the error details in error.response
       const errorMessage =
         error.response?.data?.message || "Something went wrong!";
       showToast("Error", errorMessage, "error");
@@ -93,13 +92,15 @@ const CreatePost = () => {
   return (
     <>
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-        {/* Modal content */}
         <ModalOverlay />
-
-        <ModalContent maxW="600px" height="auto">
-          {" "}
-          {/* You can adjust the value here */}
-          <ModalHeader>Create Post</ModalHeader>
+        <ModalContent
+          maxW={{ base: "90%", sm: "100%", md: "600px" }}
+          height="auto"
+          p={{ base: 3, md: 5 }}
+        >
+          <ModalHeader fontSize={{ base: "lg", md: "xl" }}>
+            Create Post
+          </ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <FormControl>
@@ -107,13 +108,14 @@ const CreatePost = () => {
                 placeholder="Post content goes here.."
                 onChange={handleTextChange}
                 value={postText}
+                fontSize={{ base: "sm", md: "md" }}
               />
               <Text
                 fontSize="xs"
                 fontWeight="bold"
                 textAlign={"right"}
                 m={"1"}
-                color={"gray.800"}
+                color={useColorModeValue("gray.800", "gray.100")}
               >
                 {remainingChar}/{MAX_CHAR}
               </Text>
@@ -136,15 +138,13 @@ const CreatePost = () => {
                 <Image
                   src={imgUrl}
                   alt="Selected image"
-                  objectFit="cover" // Fills the container while cropping any overflow to maintain aspect ratio
-                  width="100%" // Full width of the container
-                  height="300px" // Adjust this as per your design, this ensures a fixed height
-                  borderRadius="md" // Optional: Add border radius for rounded corners
+                  objectFit="cover"
+                  width="100%"
+                  maxH={{ base: "200px", md: "300px" }}
+                  borderRadius="md"
                 />
                 <CloseButton
-                  onClick={() => {
-                    setImgUrl("");
-                  }}
+                  onClick={() => setImgUrl("")}
                   bg={"gray.800"}
                   position={"absolute"}
                   top={2}
@@ -168,4 +168,5 @@ const CreatePost = () => {
     </>
   );
 };
+
 export default CreatePost;
