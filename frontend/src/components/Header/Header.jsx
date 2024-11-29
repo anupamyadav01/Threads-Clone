@@ -77,9 +77,7 @@ const Header = () => {
           src={colorMode === "dark" ? "/light-logo.svg" : "/dark-logo.svg"}
           onClick={toggleColorMode}
         />
-        <Text ml={20} fontSize={{ base: "md", md: "xl" }}>
-          {currentPage}
-        </Text>
+        <Text fontSize={{ base: "md", md: "xl" }}>{currentPage}</Text>
         <Box>
           {user ? (
             <LogoutButton />

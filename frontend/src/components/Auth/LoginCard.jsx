@@ -62,7 +62,14 @@ export default function LoginCard() {
   };
   return (
     <Flex align={"center"} justify={"center"}>
-      <Stack spacing={8} mx={"auto"} maxW={"lg"} py={12} px={6}>
+      <Stack
+        spacing={8}
+        mx={"auto"}
+        maxW={"lg"}
+        py={12}
+        px={6}
+        boxShadow={"lg"}
+      >
         <Stack align={"center"}>
           <Heading fontSize={"4xl"} textAlign={"center"}>
             Login
@@ -71,7 +78,6 @@ export default function LoginCard() {
         <Box
           rounded={"lg"}
           bg={useColorModeValue("white", "gray.dark")}
-          boxShadow={"lg"}
           p={8}
           w={{
             base: "full",

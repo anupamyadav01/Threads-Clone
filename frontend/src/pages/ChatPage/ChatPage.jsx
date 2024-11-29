@@ -140,12 +140,12 @@ const ChatPage = () => {
 
   return (
     <Box
-      mt={"60px"}
-      bg={useColorModeValue("gray.50", "gray.800")}
       position={"absolute"}
-      left={"50%"}
-      w={{ base: "100%", md: "75%" }}
-      transform={"translateX(-50%)"}
+      marginTop={"-20%"}
+      minW={"60%"}
+      transform={"translateX(-15%)"}
+      pt={8}
+      bg={useColorModeValue("gray.50", "gray.800")}
       borderRadius="lg"
       boxShadow="md"
     >

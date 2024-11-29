@@ -8,10 +8,7 @@ import postRoutes from "./routes/postRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import { app, server } from "./socket/socket.js";
 
-// Load environment variables from the .env file
 dotenv.config();
-
-// Connect to MongoDB Atlas
 
 const PORT = process.env.PORT || 10000;
 

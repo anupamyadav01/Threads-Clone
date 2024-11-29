@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import UserPage from "./pages/UserPage/UserPage";
 import Header from "./components/Header/Header";
-import { Container, useColorMode, Box } from "@chakra-ui/react";
+import { Container, Box } from "@chakra-ui/react";
 import PostDetails from "./pages/PostPage/PostDetails";
 import HomePage from "./pages/HomePage/HomePage";
 import AuthPage from "./pages/AuthPage/AuthPage";
@@ -14,21 +14,24 @@ import ChatPage from "./pages/ChatPage/ChatPage";
 import Activity from "./pages/Activity/Activity";
 
 const App = () => {
-  const { colorMode } = useColorMode();
   const user = useRecoilValue(userAtom);
   const { pathname } = useLocation();
+
   return (
     <>
       <Header />
-      <Box width={"full"} display="flex" justifyContent="center">
+      <Box
+        width="full"
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+      >
         <Container
           maxW={pathname === "/" ? { base: "700px", md: "950px" } : "700px"}
-          borderColor={colorMode === "dark" ? "gray.600" : "gray.200"}
-          borderTopRadius={"30px"}
-          height={"100%"}
-          overflow="hidden"
         >
           <Box
+            width="100%"
             h="100%"
             overflowY="scroll"
             sx={{
@@ -60,7 +63,7 @@ const App = () => {
               <Route
                 path="/activity"
                 element={user ? <Activity /> : <Navigate to="/auth" />}
-              />{" "}
+              />
               <Route
                 path="/chat"
                 element={user ? <ChatPage /> : <Navigate to="/auth" />}
