@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useRecoilValue } from "recoil";
 import io from "socket.io-client";
 import userAtom from "../atoms/userAtom";
+
 const SocketContext = createContext();
 
 export const useSocket = () => {
@@ -12,25 +13,51 @@ export const useSocket = () => {
 export const SocketContextProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
+
   const user = useRecoilValue(userAtom);
 
   useEffect(() => {
-    const socket = io("http://localhost:10000", {
+    // Don't create socket connection if user is not logged in
+    if (!user?._id) {
+      setSocket(null);
+      setOnlineUsers([]);
+      return;
+    }
+
+    const newSocket = io(import.meta.env.BACKEND_URL, {
       query: {
-        userId: user?._id,
+        userId: user._id,
       },
+      withCredentials: true,
+      transports: ["websocket", "polling"],
     });
 
-    setSocket(socket);
+    setSocket(newSocket);
 
-    socket.on("getOnlineUsers", (users) => {
+    newSocket.on("connect", () => {
+      console.log("Socket connected:", newSocket.id);
+    });
+
+    newSocket.on("getOnlineUsers", (users) => {
       setOnlineUsers(users);
     });
-    return () => socket && socket.close();
+
+    newSocket.on("connect_error", (error) => {
+      console.error("Socket connection error:", error.message);
+    });
+
+    return () => {
+      newSocket.disconnect();
+    };
   }, [user?._id]);
 
   return (
-    <SocketContext.Provider value={{ socket, onlineUsers }}>
+    <SocketContext.Provider
+      value={{
+        socket,
+        onlineUsers,
+      }}
+    >
       {children}
     </SocketContext.Provider>
   );
