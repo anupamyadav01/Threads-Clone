@@ -64,8 +64,6 @@ export const login = async (req, res) => {
   try {
     const { email, password, username } = req.body;
 
-    console.log("LOGIN BODY:", req.body);
-
     // Validate input
     if ((!email && !username) || !password) {
       return res.status(400).json({
@@ -465,7 +463,15 @@ export const freezeAccount = async (req, res) => {};
 
 export const getSuggestedUsers = async (req, res) => {
   try {
-    const users = await UserModel.find();
+    const currentUser = req.user;
+
+    const users = await UserModel.find({
+      _id: {
+        $ne: currentUser._id, // Don't show yourself
+        $nin: currentUser.following, // Don't show users already followed
+      },
+    }).select("-password");
+
     return res.status(200).json({
       suggestedUsers: users,
     });

@@ -229,40 +229,50 @@ export const replyToPost = async (req, res) => {
 };
 
 export const getFeeds = async (req, res) => {
-  const currentUser = req.user;
-  console.log(currentUser);
-
   try {
-    const following = currentUser.following;
+    // User is logged in
+    if (req.user) {
+      const following = req.user.following;
 
-    // If the user is not following anyone, return an empty array
-    if (!following || following.length === 0) {
+      // If user is not following anyone
+      if (!following || following.length === 0) {
+        return res.status(200).json({
+          message: "No posts to show",
+          data: [],
+        });
+      }
+
+      const feedPosts = await PostModel.find({
+        postedBy: { $in: following },
+      })
+        .populate("postedBy")
+        .sort({ createdAt: -1 });
+
       return res.status(200).json({
-        message: "No posts to show",
-        data: [],
+        message: "Posts fetched successfully",
+        data: feedPosts,
       });
     }
 
-    // Fetch posts from users the current user is following
-    const feedPosts = await PostModel.find({
-      postedBy: { $in: following },
-    })
+    // User is NOT logged in
+    const publicPosts = await PostModel.find({})
       .populate("postedBy")
-      .sort({ createdAt: -1 }); // Populate user data
+      .sort({ createdAt: -1 })
+      .limit(20);
 
     return res.status(200).json({
-      message: "Posts fetched successfully",
-      data: feedPosts,
+      message: "Public posts fetched successfully",
+      data: publicPosts,
     });
   } catch (error) {
     console.log("Error from getFeeds:", error);
-    res.status(500).json({
+
+    return res.status(500).json({
       message: "Internal Server Error",
       error: error.message,
     });
   }
 };
-
 export const getPostsByUsername = async (req, res) => {
   const { username } = req.params;
 

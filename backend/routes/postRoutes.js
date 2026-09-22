@@ -13,8 +13,9 @@ import {
 } from "../controllers/postController.js";
 import getUserDetails from "../middlewares/getUserDetailsM.js";
 import uploadToCloudinary from "../middlewares/cloudniaryUpload.js";
+import optionalAuth from "../middlewares/optionalAuth.js";
 
-postRoutes.get("/feeds", getUserDetails, getFeeds);
+postRoutes.get("/feeds", optionalAuth, getFeeds);
 
 postRoutes.get("/user/:username", getPostsByUsername);
 

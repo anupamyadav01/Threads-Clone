@@ -1,8 +1,8 @@
 import { Box, Flex, Skeleton, SkeletonCircle, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import SuggestedUser from "./SuggestedUser";
 import useShowToast from "../hooks/useShowToast";
 import axiosInstance from "../../axiosConfig";
+import SuggestedUser from "./SuggestedUserCard";
 
 const SuggestedUsers = () => {
   const [loading, setLoading] = useState(true);

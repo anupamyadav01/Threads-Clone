@@ -23,9 +23,13 @@ export const SocketContextProvider = ({ children }) => {
       setOnlineUsers([]);
       return;
     }
-
     // ✅ CORRECT: Point directly to your backend server URL
-    const newSocket = io("http://localhost:5000", {
+    const SOCKET_URL =
+      import.meta.env.VITE_API_URL ||
+      "https://threads-clone-backend-z6sq.onrender.com";
+    console.log(SOCKET_URL);
+
+    const newSocket = io(SOCKET_URL, {
       query: {
         userId: user?._id,
       },

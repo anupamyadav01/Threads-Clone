@@ -12,7 +12,7 @@ import useShowToast from "../../hooks/useShowToast";
 import axiosInstance from "../../../axiosConfig";
 import { useNavigate } from "react-router-dom";
 
-const LogoutButton = ({ iconOnly = false }) => {
+const LogoutButton = () => {
   const navigate = useNavigate();
   const setUser = useSetRecoilState(userAtom);
   const showToast = useShowToast();
@@ -23,18 +23,18 @@ const LogoutButton = ({ iconOnly = false }) => {
 
   const handleLogout = async () => {
     setLoading(true);
+
     try {
       await axiosInstance.post("/user/logout");
+
       showToast("Success", "Logged out successfully", "success");
     } catch (error) {
-      // Show error but still proceed with client cleanup
       showToast(
         "Notice",
         error?.response?.data?.message || "Logged out locally",
         "info",
       );
     } finally {
-      // Always purge local credentials so the client doesn't get trapped in an invalid session
       localStorage.removeItem("user-threads");
       setUser(null);
       setLoading(false);
@@ -42,11 +42,38 @@ const LogoutButton = ({ iconOnly = false }) => {
     }
   };
 
-  // Compact icon button mode (ideal for top navbars and sidebars)
-  if (iconOnly) {
-    return (
+  return (
+    <>
+      {/* =========================
+          DESKTOP / LARGE SCREEN
+          Icon + "Log out"
+      ========================= */}
+
+      <Button
+        display={{ base: "none", sm: "flex" }}
+        size="sm"
+        variant="ghost"
+        borderRadius="full"
+        color={iconColor}
+        leftIcon={<FiLogOut size={16} />}
+        isLoading={loading}
+        loadingText="Logging out..."
+        onClick={handleLogout}
+        _hover={{
+          bg: hoverBg,
+        }}
+      >
+        Log out
+      </Button>
+
+      {/* =========================
+          SMALL SCREEN
+          Icon only
+      ========================= */}
+
       <Tooltip label="Log out" placement="bottom" hasArrow>
         <IconButton
+          display={{ base: "flex", sm: "none" }}
           aria-label="Log out"
           icon={<FiLogOut size={18} />}
           variant="ghost"
@@ -55,27 +82,12 @@ const LogoutButton = ({ iconOnly = false }) => {
           color={iconColor}
           isLoading={loading}
           onClick={handleLogout}
-          _hover={{ bg: hoverBg }}
+          _hover={{
+            bg: hoverBg,
+          }}
         />
       </Tooltip>
-    );
-  }
-
-  // Standard pill button
-  return (
-    <Button
-      size="sm"
-      variant="ghost"
-      borderRadius="full"
-      color={iconColor}
-      leftIcon={<FiLogOut size={16} />}
-      isLoading={loading}
-      loadingText="Logging out..."
-      onClick={handleLogout}
-      _hover={{ bg: hoverBg }}
-    >
-      Log out
-    </Button>
+    </>
   );
 };
 

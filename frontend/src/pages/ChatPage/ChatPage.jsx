@@ -14,42 +14,59 @@ import {
   useColorModeValue,
   Divider,
 } from "@chakra-ui/react";
+
 import { SearchIcon, CloseIcon } from "@chakra-ui/icons";
 import { RiChatSmile3Line } from "react-icons/ri";
+
 import { useRecoilState, useRecoilValue } from "recoil";
 
 import MessageContainer from "../../components/Chatting/MessageContainer";
 import Conversation from "../../components/Chatting/Conversation";
+
 import useShowToast from "../../hooks/useShowToast";
 import userAtom from "../../atoms/userAtom";
 import { useSocket } from "../../context/SocketContext";
+
 import {
   conversationsAtom,
   selectedConversationAtom,
 } from "../../atoms/messagesAtom";
+
 import axiosInstance from "../../../axiosConfig";
 
 const ChatPage = () => {
   const [searchingUser, setSearchingUser] = useState(false);
   const [loadingConversations, setLoadingConversations] = useState(true);
   const [searchText, setSearchText] = useState("");
+
   const [selectedConversation, setSelectedConversation] = useRecoilState(
     selectedConversationAtom,
   );
+
   const [conversations, setConversations] = useRecoilState(conversationsAtom);
+
   const currentUser = useRecoilValue(userAtom);
+
   const showToast = useShowToast();
+
   const { socket, onlineUsers } = useSocket();
 
-  // Modern subtle theme tokens
+  // =========================
+  // Theme
+  // =========================
+
   const containerBg = useColorModeValue("white", "gray.900");
   const sidebarBg = useColorModeValue("gray.50", "gray.850");
   const borderColor = useColorModeValue("gray.200", "gray.700");
   const emptyStateBg = useColorModeValue("gray.50", "gray.800");
   const textMuted = useColorModeValue("gray.500", "gray.400");
   const inputBg = useColorModeValue("white", "gray.800");
+  const emptyIconBg = useColorModeValue("white", "gray.700");
 
-  // Socket cleanup to avoid memory leaks
+  // =========================
+  // Socket cleanup
+  // =========================
+
   useEffect(() => {
     const handleMessagesSeen = ({ conversationId }) => {
       setConversations((prev) =>
@@ -63,21 +80,28 @@ const ChatPage = () => {
               },
             };
           }
+
           return conv;
         }),
       );
     };
 
     socket?.on("messagesSeen", handleMessagesSeen);
+
     return () => socket?.off("messagesSeen", handleMessagesSeen);
   }, [socket, setConversations]);
 
-  // Fetch initial conversations
+  // =========================
+  // Fetch conversations
+  // =========================
+
   useEffect(() => {
     let isMounted = true;
+
     const getConversations = async () => {
       try {
         const res = await axiosInstance.get("/messages/conversations");
+
         if (isMounted) {
           setConversations(res?.data || []);
         }
@@ -88,23 +112,33 @@ const ChatPage = () => {
           "error",
         );
       } finally {
-        if (isMounted) setLoadingConversations(false);
+        if (isMounted) {
+          setLoadingConversations(false);
+        }
       }
     };
 
     getConversations();
+
     return () => {
       isMounted = false;
     };
   }, [showToast, setConversations]);
 
+  // =========================
+  // Search user
+  // =========================
+
   const handleConversationSearch = async (e) => {
     e.preventDefault();
+
     if (!searchText.trim()) return;
 
     setSearchingUser(true);
+
     try {
       const res = await axiosInstance.get(`/user/profile/${searchText.trim()}`);
+
       const searchedUser = res?.data?.user;
 
       if (!searchedUser) {
@@ -128,13 +162,18 @@ const ChatPage = () => {
           username: searchedUser.username,
           userProfilePic: searchedUser.profilePic,
         });
+
         setSearchText("");
+
         return;
       }
 
       const mockConversation = {
         mock: true,
-        lastMessage: { text: "", sender: "" },
+        lastMessage: {
+          text: "",
+          sender: "",
+        },
         _id: `temp_${Date.now()}`,
         participants: [
           {
@@ -146,6 +185,7 @@ const ChatPage = () => {
       };
 
       setConversations((prev) => [mockConversation, ...(prev || [])]);
+
       setSelectedConversation({
         _id: mockConversation._id,
         userId: searchedUser._id,
@@ -153,6 +193,7 @@ const ChatPage = () => {
         userProfilePic: searchedUser.profilePic,
         mock: true,
       });
+
       setSearchText("");
     } catch (error) {
       showToast(
@@ -169,29 +210,36 @@ const ChatPage = () => {
 
   return (
     <Box
-      maxW="1150px"
       w="100%"
+      maxW={{ base: "100%", md: "900px" }}
       mx="auto"
-      mt={{ base: 4, md: 8 }}
-      px={{ base: 2, md: 4 }}
-      h="84vh"
+      mt={{ base: 3, md: 6 }}
+      px={{ base: 2, sm: 4, md: 0 }}
+      h={{ base: "calc(100vh - 75px)", md: "78vh" }}
     >
+      {/* =========================
+          MAIN CHAT CONTAINER
+      ========================= */}
+
       <Flex
         h="100%"
         bg={containerBg}
-        borderRadius="2xl"
+        borderRadius={{ base: "xl", md: "2xl" }}
         border="1px solid"
         borderColor={borderColor}
         overflow="hidden"
-        boxShadow="0 20px 40px -15px rgba(0, 0, 0, 0.05)"
+        boxShadow="0 12px 30px -15px rgba(0, 0, 0, 0.12)"
       >
-        {/* Left Sidebar */}
+        {/* =========================
+            LEFT CONVERSATION SIDEBAR
+        ========================= */}
+
         <Flex
           direction="column"
           w={{
             base: selectedConversation?._id ? "0%" : "100%",
-            md: "360px",
-            lg: "400px",
+            md: "300px",
+            lg: "320px",
           }}
           display={{
             base: selectedConversation?._id ? "none" : "flex",
@@ -202,22 +250,24 @@ const ChatPage = () => {
           bg={sidebarBg}
           flexShrink={0}
         >
-          {/* Header & Search */}
-          <Box p={4} pb={3}>
-            <Text fontSize="xl" fontWeight="700" letterSpacing="-0.02em" mb={3}>
+          {/* Header + Search */}
+
+          <Box p={{ base: 3, md: 4 }} pb={3}>
+            <Text fontSize="lg" fontWeight="700" letterSpacing="-0.02em" mb={3}>
               Messages
             </Text>
 
             <form onSubmit={handleConversationSearch}>
-              <InputGroup size="md">
+              <InputGroup size="sm">
                 <InputLeftElement pointerEvents="none">
                   <SearchIcon color="gray.400" boxSize={3.5} />
                 </InputLeftElement>
+
                 <Input
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   placeholder="Search user..."
-                  borderRadius="xl"
+                  borderRadius="lg"
                   bg={inputBg}
                   border="1px solid"
                   borderColor={borderColor}
@@ -227,6 +277,7 @@ const ChatPage = () => {
                   }}
                   fontSize="sm"
                 />
+
                 {searchText && (
                   <InputRightElement>
                     <IconButton
@@ -244,7 +295,8 @@ const ChatPage = () => {
 
           <Divider borderColor={borderColor} opacity={0.6} />
 
-          {/* Conversations Scroll Area */}
+          {/* Conversations */}
+
           <VStack
             flex={1}
             overflowY="auto"
@@ -252,13 +304,18 @@ const ChatPage = () => {
             p={2}
             align="stretch"
             css={{
-              "&::-webkit-scrollbar": { width: "4px" },
+              "&::-webkit-scrollbar": {
+                width: "4px",
+              },
+
               "&::-webkit-scrollbar-thumb": {
                 background: "rgba(0,0,0,0.1)",
                 borderRadius: "24px",
               },
             }}
           >
+            {/* Loading */}
+
             {loadingConversations &&
               [0, 1, 2, 3, 4].map((_, i) => (
                 <Flex
@@ -268,13 +325,17 @@ const ChatPage = () => {
                   p={3}
                   borderRadius="xl"
                 >
-                  <SkeletonCircle size="12" />
+                  <SkeletonCircle size="11" />
+
                   <Box flex="1">
-                    <Skeleton h="12px" w="40%" mb={2} borderRadius="full" />
-                    <Skeleton h="10px" w="75%" borderRadius="full" />
+                    <Skeleton h="11px" w="40%" mb={2} borderRadius="full" />
+
+                    <Skeleton h="9px" w="75%" borderRadius="full" />
                   </Box>
                 </Flex>
               ))}
+
+            {/* Conversations */}
 
             {!loadingConversations &&
               conversationList.map((conversation) => (
@@ -286,6 +347,8 @@ const ChatPage = () => {
                   conversation={conversation}
                 />
               ))}
+
+            {/* Empty state */}
 
             {!loadingConversations && conversationList.length === 0 && (
               <Flex
@@ -304,10 +367,14 @@ const ChatPage = () => {
           </VStack>
         </Flex>
 
-        {/* Right Main Chat Area */}
+        {/* =========================
+            RIGHT CHAT AREA
+        ========================= */}
+
         <Flex
           flex={1}
           h="100%"
+          minW={0}
           display={{
             base: selectedConversation?._id ? "flex" : "none",
             md: "flex",
@@ -321,21 +388,23 @@ const ChatPage = () => {
               alignItems="center"
               justifyContent="center"
               bg={emptyStateBg}
-              p={8}
+              p={{ base: 5, md: 8 }}
               textAlign="center"
             >
               <Box
-                p={5}
+                p={4}
                 borderRadius="full"
-                bg={useColorModeValue("white", "gray.700")}
+                bg={emptyIconBg}
                 boxShadow="sm"
                 mb={4}
               >
-                <RiChatSmile3Line size={44} color="#3182ce" />
+                <RiChatSmile3Line size={40} color="#3182ce" />
               </Box>
+
               <Text fontSize="lg" fontWeight="600" mb={1}>
                 Your Inbox
               </Text>
+
               <Text fontSize="sm" color={textMuted} maxW="280px">
                 Pick a thread from the left or search someone new to exchange
                 messages.

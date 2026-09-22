@@ -18,7 +18,7 @@ import {
 import { SearchIcon, CloseIcon } from "@chakra-ui/icons";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../../axiosConfig";
-import SuggestedUser from "../../components/SuggestedUser";
+import SuggestedUser from "../../components/SuggestedUserCard";
 
 const SearchPage = () => {
   const [searchQuery, setSearchQuery] = useState("");

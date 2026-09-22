@@ -15,7 +15,7 @@ import axiosInstance from "../../../axiosConfig";
 import Post from "../../components/Post/Post";
 import postsAtom from "../../atoms/postsAtom";
 import userAtom from "../../atoms/userAtom";
-import SuggestedUsers from "../../components/SuggestedUsers";
+import SuggestedUsers from "../../components/SuggestedUsersList";
 
 const HomePage = () => {
   const [posts, setPosts] = useRecoilState(postsAtom);

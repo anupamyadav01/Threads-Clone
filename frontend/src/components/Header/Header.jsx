@@ -9,7 +9,9 @@ import {
   IconButton,
   Button,
   Tooltip,
+  Text,
 } from "@chakra-ui/react";
+
 import { GoHeart, GoHeartFill } from "react-icons/go";
 import { BiHomeAlt2, BiSolidHomeAlt2 } from "react-icons/bi";
 import {
@@ -19,10 +21,13 @@ import {
   IoSearchOutline,
 } from "react-icons/io5";
 import { FaRegUser, FaUser } from "react-icons/fa6";
+
 import LogoutButton from "../Auth/LogoutButton";
+
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import userAtom from "../../atoms/userAtom";
 import modalAtom from "../../atoms/modalAtom";
+
 import { useLocation, useNavigate } from "react-router-dom";
 import useShowToast from "../../hooks/useShowToast";
 
@@ -30,14 +35,40 @@ const Header = () => {
   const showToast = useShowToast();
   const navigate = useNavigate();
   const { pathname } = useLocation();
+
   const { colorMode, toggleColorMode } = useColorMode();
+
   const user = useRecoilValue(userAtom);
   const setIsOpen = useSetRecoilState(modalAtom);
 
-  const headerBg = useColorModeValue("white", "gray.850");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
+  // Theme colors
+  const headerBg = useColorModeValue(
+    "rgba(255, 255, 255, 0.75)",
+    "rgba(26, 32, 44, 0.75)",
+  );
+
+  const borderColor = useColorModeValue(
+    "rgba(0, 0, 0, 0.08)",
+    "rgba(255, 255, 255, 0.10)",
+  );
+
   const activeColor = useColorModeValue("black", "white");
   const inactiveColor = useColorModeValue("gray.500", "gray.400");
+
+  const activeBg = useColorModeValue(
+    "rgba(0, 0, 0, 0.06)",
+    "rgba(255, 255, 255, 0.10)",
+  );
+
+  const hoverBg = useColorModeValue(
+    "rgba(0, 0, 0, 0.05)",
+    "rgba(255, 255, 255, 0.08)",
+  );
+
+  const sidebarBg = useColorModeValue(
+    "rgba(255, 255, 255, 0.80)",
+    "rgba(26, 32, 44, 0.80)",
+  );
 
   const showUserProfile = () => {
     if (user) {
@@ -48,6 +79,7 @@ const Header = () => {
     }
   };
 
+  // Main sidebar navigation
   const navItems = [
     {
       label: "Home",
@@ -71,6 +103,7 @@ const Header = () => {
           navigate("/auth");
           return;
         }
+
         setIsOpen(true);
         navigate("/create");
       },
@@ -90,6 +123,7 @@ const Header = () => {
           navigate("/auth");
           return;
         }
+
         navigate("/chat");
       },
     },
@@ -103,6 +137,7 @@ const Header = () => {
           navigate("/auth");
           return;
         }
+
         navigate("/activity");
       },
     },
@@ -116,81 +151,101 @@ const Header = () => {
 
   return (
     <>
-      {/* 1. Top Navbar */}
+      {/* =========================
+          TOP NAVBAR
+      ========================= */}
       <Flex
         position="sticky"
         top={0}
         zIndex={100}
         w="100%"
-        h="60px"
+        h={{ base: "52px", md: "54px" }}
         alignItems="center"
         justifyContent="space-between"
-        px={{ base: 3, md: 8 }}
+        px={{ base: 3, sm: 5, md: 8 }}
         bg={headerBg}
         borderBottom="1px solid"
         borderColor={borderColor}
-        backdropFilter="blur(10px)"
+        backdropFilter="blur(16px)"
+        WebkitBackdropFilter="blur(16px)"
       >
-        {/* Left: Logo */}
-        <Image
-          cursor="pointer"
-          alt="Threads logo"
-          w={{ base: 6, md: 7 }}
-          src={colorMode === "dark" ? "/light-logo.svg" : "/dark-logo.svg"}
-          onClick={toggleColorMode}
-          title="Toggle color mode"
-        />
+        {/* =========================
+            LEFT - LOGO
+        ========================= */}
+        <Box flex="1">
+          <Image
+            cursor="pointer"
+            alt="Threads logo"
+            w={{ base: 6, md: 7 }}
+            src={colorMode === "dark" ? "/light-logo.svg" : "/dark-logo.svg"}
+            onClick={toggleColorMode}
+            title="Toggle color mode"
+          />
+        </Box>
 
-        {/* Center: Top Navigation Bar for Small Screens (Hidden on desktop) */}
+        {/* =========================
+            CENTER - FEED TABS
+        ========================= */}
         <HStack
-          spacing={{ base: 1, sm: 2 }}
-          display={{ base: "flex", lg: "none" }}
+          spacing={1}
+          h="100%"
+          justifyContent="center"
+          position="absolute"
+          left="50%"
+          transform="translateX(-50%)"
         >
-          {navItems.map((item) => {
-            const isActive = pathname === item.path;
-            return (
-              <IconButton
-                key={item.label}
-                aria-label={item.label}
-                icon={item.icon}
-                variant="ghost"
-                size="sm"
-                fontSize="20px"
-                borderRadius="lg"
-                color={isActive ? activeColor : inactiveColor}
-                bg={
-                  isActive
-                    ? useColorModeValue("gray.100", "gray.750")
-                    : "transparent"
-                }
-                _hover={{
-                  bg: useColorModeValue("gray.100", "gray.750"),
-                  color: activeColor,
-                }}
-                onClick={item.onClick}
-              />
-            );
-          })}
+          {/* For You */}
+          <Button
+            variant="ghost"
+            size="sm"
+            px={{ base: 3, sm: 5 }}
+            h="32px"
+            borderRadius="full"
+            fontSize={{ base: "13px", sm: "14px" }}
+            fontWeight="600"
+            color={pathname === "/" ? activeColor : inactiveColor}
+            bg={pathname === "/" ? activeBg : "transparent"}
+            _hover={{
+              bg: hoverBg,
+              color: activeColor,
+            }}
+            onClick={() => navigate("/")}
+          >
+            For You
+          </Button>
+
+          {/* Following */}
+          <Button
+            variant="ghost"
+            size="sm"
+            px={{ base: 3, sm: 5 }}
+            h="32px"
+            borderRadius="full"
+            fontSize={{ base: "13px", sm: "14px" }}
+            fontWeight="600"
+            color={pathname === "/following" ? activeColor : inactiveColor}
+            bg={pathname === "/following" ? activeBg : "transparent"}
+            _hover={{
+              bg: hoverBg,
+              color: activeColor,
+            }}
+            onClick={() => navigate("/following")}
+          >
+            Following
+          </Button>
         </HStack>
 
-        {/* Right: Auth / Action Button */}
-        <Box>
-          {user ? (
-            <LogoutButton />
-          ) : (
-            <Button
-              size="sm"
-              colorScheme="blue"
-              borderRadius="full"
-              onClick={() => navigate("/auth")}
-            >
-              Sign In
-            </Button>
-          )}
-        </Box>
+        {/* =========================
+            RIGHT - LOGOUT
+        ========================= */}
+        <Flex flex="1" justifyContent="flex-end">
+          {user && <LogoutButton />}
+        </Flex>
       </Flex>
 
-      {/* 2. Floating Sidebar for Desktop (Hidden on small screens) */}
+      {/* =========================
+          DESKTOP SIDEBAR
+      ========================= */}
       <VStack
         position="fixed"
         left={4}
@@ -199,15 +254,18 @@ const Header = () => {
         zIndex={90}
         spacing={4}
         p={2.5}
-        bg={headerBg}
+        bg={sidebarBg}
         borderRadius="2xl"
         border="1px solid"
         borderColor={borderColor}
         boxShadow="0 4px 20px rgba(0, 0, 0, 0.06)"
+        backdropFilter="blur(16px)"
+        WebkitBackdropFilter="blur(16px)"
         display={{ base: "none", lg: "flex" }}
       >
         {navItems.map((item) => {
           const isActive = pathname === item.path;
+
           return (
             <Tooltip
               key={item.label}
@@ -222,13 +280,9 @@ const Header = () => {
                 fontSize="22px"
                 borderRadius="xl"
                 color={isActive ? activeColor : inactiveColor}
-                bg={
-                  isActive
-                    ? useColorModeValue("gray.100", "gray.750")
-                    : "transparent"
-                }
+                bg={isActive ? activeBg : "transparent"}
                 _hover={{
-                  bg: useColorModeValue("gray.100", "gray.750"),
+                  bg: hoverBg,
                   color: activeColor,
                 }}
                 onClick={item.onClick}
