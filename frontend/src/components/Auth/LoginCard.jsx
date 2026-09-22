@@ -51,27 +51,32 @@ export default function LoginCard() {
     }
 
     setLoading(true);
+
     try {
-      const res = await axiosInstance.post("/user/login", {
-        email: inputs.email.trim(),
+      const identifier = inputs.email.trim();
+
+      const isEmail = identifier.includes("@");
+
+      const loginData = {
         password: inputs.password,
-      });
+        ...(isEmail ? { email: identifier } : { username: identifier }),
+      };
 
-      if (res?.data?.status === false || res?.data?.error) {
-        showToast("Error", res?.data?.error || "Login failed", "error");
-        return;
-      }
+      const res = await axiosInstance.post("/user/login", loginData);
 
-      const loggedInUser = res?.data?.user || res?.data;
+      const loggedInUser = res.data.user;
 
       localStorage.setItem("user-threads", JSON.stringify(loggedInUser));
+
       setUser(loggedInUser);
-      showToast("Success", res?.data?.message || "Welcome back!", "success");
+
+      showToast("Success", res.data.message || "Welcome back!", "success");
     } catch (error) {
       const errorMsg =
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         "Invalid credentials";
+
       showToast("Error", errorMsg, "error");
     } finally {
       setLoading(false);

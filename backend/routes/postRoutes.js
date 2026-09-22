@@ -1,7 +1,11 @@
 import express from "express";
+
+const postRoutes = express.Router();
+
 import {
   createPost,
   deletePostById,
+  getFeedPosts,
   getFeeds,
   getPostById,
   getPostsByUsername,
@@ -10,15 +14,21 @@ import {
 } from "../controllers/postController.js";
 import getUserDetails from "../middlewares/getUserDetailsM.js";
 import uploadToCloudinary from "../middlewares/cloudniaryUpload.js";
-const postRoutes = express.Router();
 
 postRoutes.get("/feeds", getUserDetails, getFeeds);
-postRoutes.get("/:postId", getPostById);
+
 postRoutes.get("/user/:username", getPostsByUsername);
+
+postRoutes.get("/feed", getFeedPosts);
+
 postRoutes.post("/create", getUserDetails, uploadToCloudinary, createPost);
-postRoutes.delete("/:postId", getUserDetails, deletePostById);
 
 postRoutes.put("/like/:postId", getUserDetails, likeUnlikePost);
+
 postRoutes.put("/reply/:postId", getUserDetails, replyToPost);
+
+postRoutes.delete("/:postId", getUserDetails, deletePostById);
+
+postRoutes.get("/:postId", getPostById);
 
 export default postRoutes;

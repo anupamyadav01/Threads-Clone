@@ -2,6 +2,38 @@ import mongoose from "mongoose";
 import PostModel from "../models/postModel.js";
 import UserModel from "../models/userModel.js";
 
+export const getFeedPosts = async (req, res) => {
+  try {
+    const currentUser = req.user;
+
+    // Case 1: Logged-in user following other creators
+    if (currentUser && currentUser.following?.length > 0) {
+      const feedPosts = await PostModel.find({
+        postedBy: { $in: [...currentUser.following, currentUser._id] },
+      })
+        .populate("postedBy", "name username profilePic verified")
+        .sort({ createdAt: -1 })
+        .limit(30);
+
+      // If followed users have posted, return their posts
+      if (feedPosts.length > 0) {
+        return res.status(200).json(feedPosts);
+      }
+    }
+
+    // Case 2: Public feed (Logged out users or users following 0 accounts)
+    const publicPosts = await PostModel.find()
+      .populate("postedBy", "name username profilePic verified")
+      .sort({ createdAt: -1 })
+      .limit(30);
+
+    return res.status(200).json(publicPosts);
+  } catch (error) {
+    console.error("Error fetching feed:", error.message);
+    return res.status(500).json({ error: "Failed to fetch feed" });
+  }
+};
+
 export const createPost = async (req, res) => {
   try {
     const { content } = req.body;
@@ -51,34 +83,45 @@ export const createPost = async (req, res) => {
 export const getPostById = async (req, res) => {
   try {
     const { postId } = req.params;
+
     if (!postId) {
-      return res.status(400).json({ message: "Invalid input: postId missing" });
+      return res.status(400).json({
+        message: "Invalid input: postId missing",
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return res.status(400).json({
+        message: "Invalid postId",
+      });
     }
 
     const updatedPostId = new mongoose.Types.ObjectId(postId);
 
     const post = await PostModel.findById(updatedPostId).populate({
-      path: "replies.userId", // Populate the userId inside replies
-      select: "username profilePic", // Select only the fields you need
+      path: "replies.userId",
+      select: "username profilePic",
     });
-    if (post) {
-      return res.status(200).json({
-        message: "Post fetched successfully",
-        data: post,
-      });
-    } else {
+
+    if (!post) {
       return res.status(404).json({
         message: "Post not found",
       });
     }
+
+    return res.status(200).json({
+      message: "Post fetched successfully",
+      data: post,
+    });
   } catch (error) {
     console.log("Error from getPostById:", error);
-    res
-      .status(500)
-      .json({ message: "Internal Server Error", error: error.message });
+
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
   }
 };
-
 export const deletePostById = async (req, res) => {
   try {
     const currentUser = req.user;

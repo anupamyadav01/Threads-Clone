@@ -34,10 +34,7 @@ const App = () => {
         px={isChatRoute ? { base: 2, md: 4 } : 4}
       >
         <Routes>
-          <Route
-            path="/"
-            element={user ? <HomePage /> : <Navigate to="/auth" />}
-          />
+          <Route path="/" element={<HomePage />} />
           <Route
             path="/auth"
             element={!user ? <AuthPage /> : <Navigate to="/" />}

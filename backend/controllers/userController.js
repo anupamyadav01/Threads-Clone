@@ -4,40 +4,46 @@ import generateTokenAndSetCookie from "../utils/helpers/generateTokenAndSetCooki
 import generateOTP from "../utils/helpers/generateOTP.js";
 import sendMail from "../utils/helpers/sendMail.js";
 import mongoose, { Mongoose } from "mongoose";
+import jwt from "jsonwebtoken";
 
 export const signup = async (req, res) => {
+  const { name, email, password, username } = req.body.inputs || req.body;
+
+  if (!name || !email || !password || !username) {
+    return res.status(400).json({
+      message: "Please enter all fields",
+    });
+  }
+
   try {
-    const { name, email, password, username } = req.body.inputs || req.body;
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedUsername = username.trim();
 
-    // 1. Validate required fields
-    if (!name || !email || !password || !username) {
-      return res.status(400).json({ message: "Please enter all fields" });
-    }
-
-    // 2. Check if username or email already exists in a single query
     const existingUser = await UserModel.findOne({
-      $or: [{ email: email.toLowerCase() }, { username }],
+      $or: [{ email: normalizedEmail }, { username: normalizedUsername }],
     });
 
     if (existingUser) {
       const field =
-        existingUser.email === email.toLowerCase() ? "Email" : "Username";
-      return res.status(409).json({ message: `${field} already exists` });
+        existingUser.email === normalizedEmail ? "Email" : "Username";
+
+      return res.status(409).json({
+        message: `${field} already exists`,
+      });
     }
 
-    // 3. Hash password
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 4. Create user
     const newUser = await UserModel.create({
-      name,
-      username,
-      email: email.toLowerCase(),
+      name: name.trim(),
+      email: normalizedEmail,
+      username: normalizedUsername,
       password: hashedPassword,
     });
 
-    // 5. Omit password from response
+    // ⭐ Automatically authenticate newly registered user
+    generateTokenAndSetCookie(newUser._id, res);
+
     const userResponse = newUser.toObject();
     delete userResponse.password;
 
@@ -47,6 +53,7 @@ export const signup = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in Register User:", error.message);
+
     return res.status(500).json({
       message: "Internal server error, please try again later",
     });
@@ -54,45 +61,66 @@ export const signup = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-  const { email, password, username } = req.body;
   try {
+    const { email, password, username } = req.body;
+
+    console.log("LOGIN BODY:", req.body);
+
+    // Validate input
     if ((!email && !username) || !password) {
       return res.status(400).json({
         message: "Please enter email/username and password",
       });
     }
+
     let existingUser;
+
+    // Find by email
     if (email) {
-      existingUser = await UserModel.findOne({ email });
-    } else if (username) {
-      existingUser = await UserModel.findOne({ username });
+      existingUser = await UserModel.findOne({
+        email: email.trim().toLowerCase(),
+      });
     }
 
-    // user not found
+    // Find by username
+    else if (username) {
+      existingUser = await UserModel.findOne({
+        username: username.trim(),
+      });
+    }
+
+    // User not found
     if (!existingUser) {
-      return res.status(400).json({ error: "User Not Found" });
+      return res.status(400).json({
+        error: "User Not Found",
+      });
     }
 
-    // checking if password is correct or not
+    // Check password
     const isPasswordCorrect = await bcrypt.compare(
       password,
       existingUser.password,
     );
+
     if (!isPasswordCorrect) {
-      return res
-        .status(400)
-        .send({ error: "Password is Incorrect, try again" });
+      return res.status(400).json({
+        error: "Password is Incorrect, try again",
+      });
     }
 
-    // if password is correct, create JWT token and // store token in cookie
+    // Generate JWT and store it in cookie
     generateTokenAndSetCookie(existingUser._id, res);
+
+    // Don't send password to frontend
+    const userResponse = existingUser.toObject();
+    delete userResponse.password;
 
     return res.status(200).json({
       message: "User Logged in Successfully.",
-      user: existingUser,
+      user: userResponse,
     });
   } catch (error) {
-    console.log("Error in Login", error);
+    console.error("Error in Login:", error);
 
     return res.status(500).json({
       error: "Internal server error",
@@ -100,7 +128,6 @@ export const login = async (req, res) => {
     });
   }
 };
-
 export const checkLoggedIn = async (req, res) => {
   try {
     const user = req.user;
@@ -437,36 +464,42 @@ export const searchUser = async (req, res) => {
 export const freezeAccount = async (req, res) => {};
 
 export const getSuggestedUsers = async (req, res) => {
-  const user = req?.user;
   try {
-    const userId = user._id;
-    const usersFollowedByMe = user?.following;
+    const user = req.user;
 
-    // Fetch suggested users
+    if (!user?._id) {
+      return res.status(401).json({
+        message: "Authentication required",
+      });
+    }
+
+    const userId = user._id;
+    const following = user.following || [];
+
     const suggestedUsers = await UserModel.aggregate([
       {
         $match: {
-          _id: { $ne: userId }, // Exclude current user
+          _id: {
+            $ne: userId,
+            $nin: following,
+          },
         },
       },
       {
-        $sample: { size: 10 }, // Get a random sample of 10 users
+        $sample: {
+          size: 10,
+        },
       },
     ]);
 
-    // Filter out users that are already followed by the current user
-    const filteredUsers = suggestedUsers.filter(
-      (suggestedUser) =>
-        !usersFollowedByMe.some(
-          (followedUserId) =>
-            followedUserId.toString() === suggestedUser._id.toString(),
-        ),
-    );
-
-    // Return the filtered list of suggested users
-    res.status(200).send({ suggestedUsers: filteredUsers });
+    return res.status(200).json({
+      suggestedUsers,
+    });
   } catch (error) {
-    console.log("Error inside getSuggestedUsers usercontroller", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error inside getSuggestedUsers:", error);
+
+    return res.status(500).json({
+      message: "Server error",
+    });
   }
 };
