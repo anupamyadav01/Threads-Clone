@@ -5,7 +5,6 @@ const postRoutes = express.Router();
 import {
   createPost,
   deletePostById,
-  getFeedPosts,
   getFeeds,
   getPostById,
   getPostsByUsername,
@@ -19,7 +18,7 @@ postRoutes.get("/feeds", getUserDetails, getFeeds);
 
 postRoutes.get("/user/:username", getPostsByUsername);
 
-postRoutes.get("/feed", getFeedPosts);
+// postRoutes.get("/feed", getFeedPosts);
 
 postRoutes.post("/create", getUserDetails, uploadToCloudinary, createPost);
 

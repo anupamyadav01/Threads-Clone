@@ -2,7 +2,6 @@ import {
   Flex,
   Box,
   Image,
-  Text,
   useColorMode,
   useColorModeValue,
   HStack,
@@ -65,7 +64,7 @@ const Header = () => {
     {
       label: "Create Post",
       path: "/create",
-      icon: <IoAddOutline boxsize={7} />,
+      icon: <IoAddOutline />,
       onClick: () => {
         if (!user) {
           showToast("Error", "Login to create a post", "error");
@@ -126,12 +125,13 @@ const Header = () => {
         h="60px"
         alignItems="center"
         justifyContent="space-between"
-        px={{ base: 4, md: 8 }}
+        px={{ base: 3, md: 8 }}
         bg={headerBg}
         borderBottom="1px solid"
         borderColor={borderColor}
         backdropFilter="blur(10px)"
       >
+        {/* Left: Logo */}
         <Image
           cursor="pointer"
           alt="Threads logo"
@@ -141,6 +141,39 @@ const Header = () => {
           title="Toggle color mode"
         />
 
+        {/* Center: Top Navigation Bar for Small Screens (Hidden on desktop) */}
+        <HStack
+          spacing={{ base: 1, sm: 2 }}
+          display={{ base: "flex", lg: "none" }}
+        >
+          {navItems.map((item) => {
+            const isActive = pathname === item.path;
+            return (
+              <IconButton
+                key={item.label}
+                aria-label={item.label}
+                icon={item.icon}
+                variant="ghost"
+                size="sm"
+                fontSize="20px"
+                borderRadius="lg"
+                color={isActive ? activeColor : inactiveColor}
+                bg={
+                  isActive
+                    ? useColorModeValue("gray.100", "gray.750")
+                    : "transparent"
+                }
+                _hover={{
+                  bg: useColorModeValue("gray.100", "gray.750"),
+                  color: activeColor,
+                }}
+                onClick={item.onClick}
+              />
+            );
+          })}
+        </HStack>
+
+        {/* Right: Auth / Action Button */}
         <Box>
           {user ? (
             <LogoutButton />
@@ -157,7 +190,7 @@ const Header = () => {
         </Box>
       </Flex>
 
-      {/* 2. Floating Sidebar for Desktop (Left) */}
+      {/* 2. Floating Sidebar for Desktop (Hidden on small screens) */}
       <VStack
         position="fixed"
         left={4}
@@ -204,37 +237,6 @@ const Header = () => {
           );
         })}
       </VStack>
-
-      {/* 3. Bottom Navigation Bar for Mobile */}
-      <HStack
-        position="fixed"
-        bottom={0}
-        left={0}
-        right={0}
-        zIndex={100}
-        h="56px"
-        justifyContent="space-around"
-        alignItems="center"
-        bg={headerBg}
-        borderTop="1px solid"
-        borderColor={borderColor}
-        display={{ base: "flex", lg: "none" }}
-      >
-        {navItems.map((item) => {
-          const isActive = pathname === item.path;
-          return (
-            <IconButton
-              key={item.label}
-              aria-label={item.label}
-              icon={item.icon}
-              variant="ghost"
-              fontSize="20px"
-              color={isActive ? activeColor : inactiveColor}
-              onClick={item.onClick}
-            />
-          );
-        })}
-      </HStack>
     </>
   );
 };

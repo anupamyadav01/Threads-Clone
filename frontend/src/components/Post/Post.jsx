@@ -25,6 +25,8 @@ const Post = ({ post, postedBy: propUser }) => {
   const showToast = useShowToast();
   const currentUser = useRecoilValue(userAtom);
   const [posts, setPosts] = useRecoilState(postsAtom);
+  console.log(posts);
+
   const navigate = useNavigate();
 
   // Color tokens
@@ -37,9 +39,7 @@ const Post = ({ post, postedBy: propUser }) => {
 
   const author = post?.postedBy || propUser;
 
-  // Navigate to post details without wrapping everything in <Link>
   const handlePostNavigation = (e) => {
-    // Prevent navigation if the user clicked an interactive child (button, link, svg)
     if (
       e.target.closest("button") ||
       e.target.closest("svg") ||
@@ -86,7 +86,7 @@ const Post = ({ post, postedBy: propUser }) => {
       p={{ base: 3, md: 4 }}
       mb={4}
       bg={cardBg}
-      border="1px solid"
+      border="1px solid white"
       borderColor={borderColor}
       borderRadius="xl"
       cursor="pointer"

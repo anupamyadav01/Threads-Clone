@@ -38,7 +38,7 @@ const HomePage = () => {
 
       try {
         // Query feed (handles public feed if unauthenticated)
-        const response = await axiosInstance.get("/post/feed", {
+        const response = await axiosInstance.get("/post/feeds", {
           signal: controller.signal,
         });
 

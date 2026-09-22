@@ -2,38 +2,6 @@ import mongoose from "mongoose";
 import PostModel from "../models/postModel.js";
 import UserModel from "../models/userModel.js";
 
-export const getFeedPosts = async (req, res) => {
-  try {
-    const currentUser = req.user;
-
-    // Case 1: Logged-in user following other creators
-    if (currentUser && currentUser.following?.length > 0) {
-      const feedPosts = await PostModel.find({
-        postedBy: { $in: [...currentUser.following, currentUser._id] },
-      })
-        .populate("postedBy", "name username profilePic verified")
-        .sort({ createdAt: -1 })
-        .limit(30);
-
-      // If followed users have posted, return their posts
-      if (feedPosts.length > 0) {
-        return res.status(200).json(feedPosts);
-      }
-    }
-
-    // Case 2: Public feed (Logged out users or users following 0 accounts)
-    const publicPosts = await PostModel.find()
-      .populate("postedBy", "name username profilePic verified")
-      .sort({ createdAt: -1 })
-      .limit(30);
-
-    return res.status(200).json(publicPosts);
-  } catch (error) {
-    console.error("Error fetching feed:", error.message);
-    return res.status(500).json({ error: "Failed to fetch feed" });
-  }
-};
-
 export const createPost = async (req, res) => {
   try {
     const { content } = req.body;
@@ -262,6 +230,8 @@ export const replyToPost = async (req, res) => {
 
 export const getFeeds = async (req, res) => {
   const currentUser = req.user;
+  console.log(currentUser);
+
   try {
     const following = currentUser.following;
 

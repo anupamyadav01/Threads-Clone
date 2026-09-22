@@ -465,35 +465,9 @@ export const freezeAccount = async (req, res) => {};
 
 export const getSuggestedUsers = async (req, res) => {
   try {
-    const user = req.user;
-
-    if (!user?._id) {
-      return res.status(401).json({
-        message: "Authentication required",
-      });
-    }
-
-    const userId = user._id;
-    const following = user.following || [];
-
-    const suggestedUsers = await UserModel.aggregate([
-      {
-        $match: {
-          _id: {
-            $ne: userId,
-            $nin: following,
-          },
-        },
-      },
-      {
-        $sample: {
-          size: 10,
-        },
-      },
-    ]);
-
+    const users = await UserModel.find();
     return res.status(200).json({
-      suggestedUsers,
+      suggestedUsers: users,
     });
   } catch (error) {
     console.error("Error inside getSuggestedUsers:", error);

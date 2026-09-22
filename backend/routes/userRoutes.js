@@ -22,7 +22,7 @@ export const userRoutes = express.Router();
 // authentication and authorization routes
 userRoutes.post("/signup", signup);
 userRoutes.post("/login", login);
-userRoutes.get("/suggestedUsers", getUserDetails, getSuggestedUsers);
+userRoutes.get("/suggestedUsers", getSuggestedUsers);
 userRoutes.post("/logout", logout);
 userRoutes.post("/isLoggedIn", getUserDetails, checkLoggedIn);
 userRoutes.post("/forgot-password", forgotPassword);

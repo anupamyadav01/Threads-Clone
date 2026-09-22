@@ -24,12 +24,11 @@ export const SocketContextProvider = ({ children }) => {
       return;
     }
 
-    const newSocket = io(import.meta.env.BACKEND_URL, {
+    // ✅ CORRECT: Point directly to your backend server URL
+    const newSocket = io("http://localhost:5000", {
       query: {
-        userId: user._id,
+        userId: user?._id,
       },
-      withCredentials: true,
-      transports: ["websocket", "polling"],
     });
 
     setSocket(newSocket);
