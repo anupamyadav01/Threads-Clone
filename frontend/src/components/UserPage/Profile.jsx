@@ -1,348 +1,292 @@
 import {
-  Flex,
   Avatar,
-  Text,
+  Box,
   Button,
-  VStack,
-  HStack,
   Divider,
+  Flex,
+  HStack,
   IconButton,
-  MenuButton,
   Menu,
-  MenuList,
+  MenuButton,
   MenuItem,
+  MenuList,
   Modal,
-  ModalOverlay,
+  ModalBody,
+  ModalCloseButton,
   ModalContent,
   ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  useDisclosure,
-  Box,
-  Skeleton,
-  SkeletonCircle,
+  ModalOverlay,
+  Spinner,
+  Text,
   useColorModeValue,
+  useDisclosure,
+  VStack,
 } from "@chakra-ui/react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { PiDotsThreeCircleLight } from "react-icons/pi";
-import { FaCopy } from "react-icons/fa6";
 import { useEffect, useState } from "react";
-import axiosInstance from "../../../axiosConfig";
-import useShowToast from "../../hooks/useShowToast";
+import { FaCopy } from "react-icons/fa6";
+import { PiDotsThreeCircleLight } from "react-icons/pi";
+import { useNavigate, useParams } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import userAtom from "../../atoms/userAtom";
 import useFollowUnfollow from "../../hooks/useFollowUnfollow";
+import useShowToast from "../../hooks/useShowToast";
+import axiosInstance from "../../../axiosConfig";
 
 const Profile = () => {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const showToast = useShowToast();
   const { username } = useParams();
-  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+  const showToast = useShowToast();
   const loggedInUser = useRecoilValue(userAtom);
+
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const { handleFollowUnfollow, following, updating } = useFollowUnfollow(user);
 
+  // Modal State for Followers / Following
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [modalTitle, setModalTitle] = useState("");
   const [modalUsers, setModalUsers] = useState([]);
 
-  // Theme tokens
+  // Theme colors
   const cardBg = useColorModeValue("white", "gray.850");
   const borderColor = useColorModeValue("gray.200", "gray.700");
-  const primaryText = useColorModeValue("gray.900", "gray.100");
-  const secondaryText = useColorModeValue("gray.500", "gray.400");
-  const modalHoverBg = useColorModeValue("gray.100", "gray.750");
+  const textColor = useColorModeValue("gray.900", "gray.100");
+  const subTextColor = useColorModeValue("gray.500", "gray.400");
 
-  const copyUserURL = () => {
-    navigator.clipboard.writeText(window.location.href).then(() => {
-      showToast("Copied", "Profile link copied to clipboard", "success");
-    });
-  };
-
+  // Fetch Profile Info
   useEffect(() => {
-    let isMounted = true;
-
-    const getUserDetails = async () => {
+    const fetchProfile = async () => {
       setLoading(true);
       try {
-        const response = await axiosInstance.get(`/user/profile/${username}`);
-        if (response?.data?.error) {
-          showToast("Error", response.data.error, "error");
-          if (isMounted) setUser(null);
-          return;
+        const res = await axiosInstance.get(`/user/profile/${username}`);
+        console.log(res);
+
+        if (res.data?.error) {
+          showToast("Error", res.data.error, "error");
+          setUser(null);
+        } else {
+          setUser(res.data.user || res.data);
         }
-        if (isMounted) setUser(response?.data?.user || response?.data);
-      } catch (error) {
-        showToast(
-          "Error",
-          error.response?.data?.message || "Failed to load profile",
-          "error",
-        );
-        if (isMounted) setUser(null);
+      } catch (err) {
+        showToast("Error", err.response?.data?.message || err.message, "error");
+        setUser(null);
       } finally {
-        if (isMounted) setLoading(false);
+        setLoading(false);
       }
     };
 
-    getUserDetails();
-    return () => {
-      isMounted = false;
-    };
-  }, [username, showToast]);
+    fetchProfile();
+  }, [username]);
 
-  const openFollowersModal = () => {
-    setModalTitle("Followers");
-    setModalUsers(user?.followers || []);
+  const copyUrl = () => {
+    navigator.clipboard.writeText(window.location.href);
+    showToast("Success", "Profile link copied to clipboard", "success");
+  };
+
+  const handleOpenModal = (title, list) => {
+    setModalTitle(title);
+    setModalUsers(list || []);
     onOpen();
   };
 
-  const openFollowingModal = () => {
-    setModalTitle("Following");
-    setModalUsers(user?.following || []);
-    onOpen();
-  };
-
-  // 1. Loading Skeleton State
   if (loading) {
     return (
-      <VStack spacing={6} w="100%" maxW="680px" mx="auto" mt="40px" px={4}>
-        <Flex w="100%" justify="space-between" align="center">
-          <Box>
-            <Skeleton h="24px" w="180px" mb={2} borderRadius="md" />
-            <Skeleton h="16px" w="120px" mb={3} borderRadius="md" />
-            <Skeleton h="14px" w="220px" borderRadius="md" />
-          </Box>
-          <SkeletonCircle size="24" />
-        </Flex>
-        <Skeleton h="36px" w="100%" borderRadius="lg" />
-      </VStack>
+      <Flex justify="center" align="center" minH="40vh">
+        <Spinner size="lg" color="blue.500" />
+      </Flex>
     );
   }
 
-  // 2. User Not Found State
   if (!user) {
     return (
-      <Flex h="50vh" justify="center" align="center" direction="column" gap={3}>
-        <Text fontSize="xl" fontWeight="semibold" color={primaryText}>
+      <Flex
+        justify="center"
+        align="center"
+        minH="40vh"
+        direction="column"
+        gap={3}
+      >
+        <Text fontSize="lg" fontWeight="semibold" color={textColor}>
           User not found
         </Text>
         <Button size="sm" onClick={() => navigate("/")}>
-          Return Home
+          Go Home
         </Button>
       </Flex>
     );
   }
 
-  const isOwnProfile = loggedInUser?._id === user?._id;
+  const isOwnProfile = loggedInUser?._id === user._id;
 
   return (
-    <VStack
-      spacing={5}
-      w="100%"
-      maxW="680px"
-      mx="auto"
-      mt={{ base: "20px", md: "40px" }}
-      px={4}
-    >
-      {/* Profile Header Card */}
+    <Box maxW="620px" mx="auto" w="100%" pt={4} px={4}>
       <Box
-        w="100%"
-        p={{ base: 4, md: 6 }}
+        p={6}
         bg={cardBg}
         borderRadius="2xl"
         border="1px solid"
         borderColor={borderColor}
       >
-        <Flex
-          direction={{ base: "column-reverse", sm: "row" }}
-          justify="space-between"
-          align={{ base: "flex-start", sm: "center" }}
-          gap={4}
-        >
-          {/* User Details */}
-          <VStack align="flex-start" spacing={1} flex="1">
-            <Text
-              fontWeight="700"
-              fontSize={{ base: "xl", md: "2xl" }}
-              color={primaryText}
-            >
-              {user?.name}
+        {/* Top: Name/Username on left, Avatar + Menu on right */}
+        <Flex justify="space-between" align="start">
+          <Box>
+            <Text fontSize="2xl" fontWeight="bold" color={textColor}>
+              {user.name}
             </Text>
-
-            <Text fontSize="sm" color={secondaryText} fontWeight="medium">
-              @{user?.username}
+            <Text fontSize="sm" color={subTextColor}>
+              @{user.username}
             </Text>
+          </Box>
 
-            {user?.bio && (
-              <Text
-                fontSize="sm"
-                color={primaryText}
-                pt={2}
-                whiteSpace="pre-wrap"
-              >
-                {user.bio}
-              </Text>
-            )}
-          </VStack>
-
-          {/* Avatar and Action Menu */}
-          <HStack align="flex-start" spacing={3}>
-            <Avatar
-              size={{ base: "xl", md: "2xl" }}
-              src={user?.profilePic}
-              name={user?.name || user?.username}
-            />
-
+          <HStack spacing={2} align="center">
+            <Avatar size="lg" name={user.name} src={user.profilePic} />
             <Menu>
               <MenuButton
                 as={IconButton}
                 icon={<PiDotsThreeCircleLight size={28} />}
                 variant="ghost"
                 borderRadius="full"
-                aria-label="Profile actions"
+                aria-label="Options"
               />
-              <MenuList borderRadius="xl" shadow="md">
-                <MenuItem icon={<FaCopy />} onClick={copyUserURL} fontSize="sm">
-                  Copy profile link
+              <MenuList>
+                <MenuItem icon={<FaCopy />} onClick={copyUrl}>
+                  Copy link
                 </MenuItem>
               </MenuList>
             </Menu>
           </HStack>
         </Flex>
 
-        {/* Primary CTA (Update Profile or Follow/Unfollow) */}
+        {/* Bio */}
+        {user.bio && (
+          <Text fontSize="sm" color={textColor} mt={3} whiteSpace="pre-wrap">
+            {user.bio}
+          </Text>
+        )}
+
+        {/* Follow / Edit Profile CTA Button */}
         <Box mt={5}>
           {isOwnProfile ? (
             <Button
-              w="100%"
+              w="full"
+              size="sm"
               variant="outline"
               borderRadius="xl"
-              size="sm"
-              borderColor={borderColor}
               onClick={() => navigate("/update")}
             >
               Edit Profile
             </Button>
           ) : (
             <Button
-              w="100%"
-              borderRadius="xl"
+              w="full"
               size="sm"
+              borderRadius="xl"
               colorScheme={following ? "gray" : "blue"}
               variant={following ? "outline" : "solid"}
               onClick={handleFollowUnfollow}
               isLoading={updating}
             >
-              {following ? "Following" : "Follow"}
+              {following ? "Unfollow" : "Follow"}
             </Button>
           )}
         </Box>
       </Box>
 
-      {/* Followers & Following Toggles */}
-      <HStack w="100%" spacing={3}>
+      {/* Followers & Following Stats */}
+      <HStack spacing={3} mt={4} w="full">
         <Button
-          flex="1"
+          flex={1}
           variant="outline"
           borderRadius="xl"
           borderColor={borderColor}
-          onClick={openFollowersModal}
-          py={5}
+          onClick={() => handleOpenModal("Followers", user.followers)}
         >
-          <VStack spacing={0}>
-            <Text fontWeight="bold" fontSize="md">
-              {user?.followers?.length || 0}
-            </Text>
-            <Text fontSize="xs" color={secondaryText}>
-              Followers
-            </Text>
-          </VStack>
+          <Text fontSize="sm">
+            <b>{user.followers?.length || 0}</b> Followers
+          </Text>
         </Button>
 
         <Button
-          flex="1"
+          flex={1}
           variant="outline"
           borderRadius="xl"
           borderColor={borderColor}
-          onClick={openFollowingModal}
-          py={5}
+          onClick={() => handleOpenModal("Following", user.following)}
         >
-          <VStack spacing={0}>
-            <Text fontWeight="bold" fontSize="md">
-              {user?.following?.length || 0}
-            </Text>
-            <Text fontSize="xs" color={secondaryText}>
-              Following
-            </Text>
-          </VStack>
+          <Text fontSize="sm">
+            <b>{user.following?.length || 0}</b> Following
+          </Text>
         </Button>
       </HStack>
 
-      <Divider borderColor={borderColor} />
+      <Divider my={6} borderColor={borderColor} />
 
-      {/* Followers / Following Dialog Modal */}
-      <Modal isOpen={isOpen} onClose={onClose} isCentered size="sm">
+      {/* Followers / Following List Modal */}
+      <Modal isOpen={isOpen} onClose={onClose} size="sm" isCentered>
         <ModalOverlay backdropFilter="blur(3px)" />
-        <ModalContent borderRadius="2xl" bg={cardBg}>
-          <ModalHeader fontSize="md" fontWeight="bold">
-            {modalTitle}
-          </ModalHeader>
+        <ModalContent borderRadius="xl" bg={cardBg}>
+          <ModalHeader fontSize="md">{modalTitle}</ModalHeader>
           <ModalCloseButton />
-          <ModalBody pb={6} maxH="380px" overflowY="auto">
-            {modalUsers?.length > 0 ? (
-              modalUsers.map((item, index) => {
-                // Safely handles both populated user objects and unpopulated string IDs
-                const itemUser =
-                  typeof item === "object" ? item : { _id: item };
-                const itemUsername = itemUser.username || "User";
-
-                return (
-                  <Flex
-                    key={itemUser._id || index}
-                    align="center"
-                    justify="space-between"
-                    p={2}
-                    borderRadius="lg"
-                    _hover={{ bg: modalHoverBg }}
-                    cursor="pointer"
-                    onClick={() => {
-                      onClose();
-                      if (itemUser.username) {
-                        navigate(`/${itemUser.username}`);
-                      }
-                    }}
-                  >
-                    <HStack spacing={3}>
-                      <Avatar
-                        size="sm"
-                        src={itemUser.profilePic}
-                        name={itemUser.name || itemUsername}
-                      />
-                      <Box>
-                        <Text fontWeight="semibold" fontSize="sm">
-                          {itemUsername}
-                        </Text>
-                        {itemUser.name && (
-                          <Text fontSize="xs" color={secondaryText}>
-                            {itemUser.name}
-                          </Text>
-                        )}
-                      </Box>
-                    </HStack>
-                  </Flex>
-                );
-              })
+          <ModalBody pb={6} maxH="350px" overflowY="auto">
+            {modalUsers.length === 0 ? (
+              <Text
+                textAlign="center"
+                color={subTextColor}
+                fontSize="sm"
+                py={4}
+              >
+                No users found.
+              </Text>
             ) : (
-              <Flex justify="center" py={6}>
-                <Text fontSize="sm" color={secondaryText}>
-                  No users to display
-                </Text>
-              </Flex>
+              <VStack spacing={3} align="stretch">
+                {modalUsers.map((item, idx) => (
+                  <UserRow
+                    key={item?._id || idx}
+                    item={item}
+                    onClose={onClose}
+                    navigate={navigate}
+                  />
+                ))}
+              </VStack>
             )}
           </ModalBody>
         </ModalContent>
       </Modal>
-    </VStack>
+    </Box>
+  );
+};
+
+// Mini subcomponent to render each user in the Followers/Following modal
+const UserRow = ({ item, onClose, navigate }) => {
+  const username = item.username || "user";
+  const name = item.name || username;
+  const hoverBg = useColorModeValue("gray.50", "whiteAlpha.100");
+
+  return (
+    <Flex
+      align="center"
+      gap={3}
+      p={2}
+      borderRadius="lg"
+      cursor="pointer"
+      _hover={{ bg: hoverBg }}
+      onClick={() => {
+        onClose();
+        navigate(`/${username}`);
+      }}
+    >
+      <Avatar size="sm" src={item.profilePic} name={name} />
+      <Box minW="0" flex={1}>
+        <Text fontSize="sm" fontWeight="bold" noOfLines={1}>
+          {username}
+        </Text>
+        {item.name && (
+          <Text fontSize="xs" color="gray.500" noOfLines={1}>
+            {item.name}
+          </Text>
+        )}
+      </Box>
+    </Flex>
   );
 };
 

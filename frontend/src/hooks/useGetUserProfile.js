@@ -10,41 +10,59 @@ const useGetUserProfile = () => {
   const showToast = useShowToast();
 
   useEffect(() => {
+    let isMounted = true;
+
     const getUser = async () => {
+      if (!username) return;
+
+      setLoading(true);
       try {
-        // Make a GET request using axiosInstance
         const res = await axiosInstance.get(`/user/profile/${username}`);
+        const responseData = res?.data;
 
-        // Axios automatically parses the response, so access the data directly
-        const data = res?.data?.user;
-        // Handle errors in the response
-        if (data.error) {
-          showToast("Error", data.error, "error");
+        // Check for error in response body
+        if (responseData?.error) {
+          if (isMounted) {
+            showToast("Error", responseData.error, "error");
+            setUser(null);
+          }
           return;
         }
 
-        // If the user account is frozen, set user to null
-        if (data.isFrozen) {
-          setUser(null);
+        const userData = responseData?.user || responseData;
+
+        // If the account is frozen, reset user
+        if (userData?.isFrozen) {
+          if (isMounted) setUser(null);
           return;
         }
 
-        // Set the user state with the retrieved data
-        setUser(data);
+        if (isMounted) {
+          setUser(userData);
+        }
       } catch (error) {
-        // Error handling with Axios
-        showToast(
-          "Error",
-          error.response?.data?.message || error.message,
-          "error"
-        );
+        if (isMounted) {
+          setUser(null);
+          showToast(
+            "Error",
+            error.response?.data?.error ||
+              error.response?.data?.message ||
+              error.message,
+            "error",
+          );
+        }
       } finally {
-        setLoading(false); // Ensure loading state is reset
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
-    // Call the getUser function when username or showToast changes
     getUser();
+
+    return () => {
+      isMounted = false;
+    };
   }, [username, showToast]);
 
   return { loading, user };
