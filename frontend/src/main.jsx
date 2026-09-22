@@ -11,8 +11,8 @@ import { SocketContextProvider } from "./context/SocketContext.jsx";
 const styles = {
   global: (props) => ({
     body: {
-      color: mode(`gray.800`, `whiteAlpha.900`)(props),
-      bg: mode(`gray.100`, `#101010`)(props),
+      color: mode("gray.800", "whiteAlpha.900")(props),
+      bg: mode("gray.100", "#101010")(props),
     },
   }),
 };
@@ -22,26 +22,28 @@ const config = {
   useSystemColorMode: false,
 };
 
+// Preserve Chakra's default numeric gray scale while adding custom shades
 const colors = {
-  gray: {
-    light: `#616161`,
-    dark: `#1e1e1e`,
+  customGray: {
+    light: "#616161",
+    dark: "#1e1e1e",
   },
 };
 
-const theme = extendTheme(config, colors, styles);
+// Pass config, colors, and styles as a single unified object
+const theme = extendTheme({ config, colors, styles });
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
+    <ColorModeScript initialColorMode={theme.config.initialColorMode} />
     <RecoilRoot>
       <BrowserRouter>
         <ChakraProvider theme={theme}>
-          <ColorModeScript initialColorMode={theme.config.initialColorMode} />
           <SocketContextProvider>
             <App />
           </SocketContextProvider>
         </ChakraProvider>
       </BrowserRouter>
     </RecoilRoot>
-  </StrictMode>
+  </StrictMode>,
 );

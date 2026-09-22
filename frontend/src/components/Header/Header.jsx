@@ -4,230 +4,238 @@ import {
   Image,
   Text,
   useColorMode,
+  useColorModeValue,
   HStack,
   VStack,
   IconButton,
   Button,
+  Tooltip,
 } from "@chakra-ui/react";
-import { GoHeart } from "react-icons/go";
-import { BiHomeAlt2 } from "react-icons/bi";
+import { GoHeart, GoHeartFill } from "react-icons/go";
+import { BiHomeAlt2, BiSolidHomeAlt2 } from "react-icons/bi";
 import {
   IoAddOutline,
   IoChatbubbleEllipsesOutline,
+  IoChatbubbleEllipses,
   IoSearchOutline,
 } from "react-icons/io5";
-import { FaRegUser } from "react-icons/fa6";
+import { FaRegUser, FaUser } from "react-icons/fa6";
 import LogoutButton from "../Auth/LogoutButton";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import userAtom from "../../atoms/userAtom";
 import modalAtom from "../../atoms/modalAtom";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import useShowToast from "../../hooks/useShowToast";
-import { currentPageAtom } from "../../atoms/CurrentPageAtom";
 
 const Header = () => {
   const showToast = useShowToast();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { colorMode, toggleColorMode } = useColorMode();
   const user = useRecoilValue(userAtom);
-  const [isOpen, setIsOpen] = useRecoilState(modalAtom);
-  const [currentPage, setCurrentPage] = useRecoilState(currentPageAtom);
+  const setIsOpen = useSetRecoilState(modalAtom);
 
-  const handleOnClick = () => {
-    setCurrentPage("Create Post");
-    navigate("/create");
-    setIsOpen(true);
-  };
+  const headerBg = useColorModeValue("white", "gray.850");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const activeColor = useColorModeValue("black", "white");
+  const inactiveColor = useColorModeValue("gray.500", "gray.400");
 
   const showUserProfile = () => {
     if (user) {
-      setCurrentPage("Profile");
       navigate(`/${user.username}`);
     } else {
       showToast("Error", "Login to view profile", "error");
-      setTimeout(() => {
-        navigate("/auth");
-      }, 2000);
+      navigate("/auth");
     }
   };
 
-  const navigateToSignIn = () => {
-    navigate("/auth");
-  };
+  const navItems = [
+    {
+      label: "Home",
+      path: "/",
+      icon: pathname === "/" ? <BiSolidHomeAlt2 /> : <BiHomeAlt2 />,
+      onClick: () => navigate("/"),
+    },
+    {
+      label: "Search",
+      path: "/search",
+      icon: <IoSearchOutline />,
+      onClick: () => navigate("/search"),
+    },
+    {
+      label: "Create Post",
+      path: "/create",
+      icon: <IoAddOutline boxsize={7} />,
+      onClick: () => {
+        if (!user) {
+          showToast("Error", "Login to create a post", "error");
+          navigate("/auth");
+          return;
+        }
+        setIsOpen(true);
+        navigate("/create");
+      },
+    },
+    {
+      label: "Chat",
+      path: "/chat",
+      icon:
+        pathname === "/chat" ? (
+          <IoChatbubbleEllipses />
+        ) : (
+          <IoChatbubbleEllipsesOutline />
+        ),
+      onClick: () => {
+        if (!user) {
+          showToast("Error", "Login to chat", "error");
+          navigate("/auth");
+          return;
+        }
+        navigate("/chat");
+      },
+    },
+    {
+      label: "Activity",
+      path: "/activity",
+      icon: pathname === "/activity" ? <GoHeartFill /> : <GoHeart />,
+      onClick: () => {
+        if (!user) {
+          showToast("Error", "Login to view activity", "error");
+          navigate("/auth");
+          return;
+        }
+        navigate("/activity");
+      },
+    },
+    {
+      label: "Profile",
+      path: user ? `/${user.username}` : "/auth",
+      icon: pathname === `/${user?.username}` ? <FaUser /> : <FaRegUser />,
+      onClick: showUserProfile,
+    },
+  ];
 
   return (
-    <Box position="relative">
-      {/* Responsive Header */}
+    <>
+      {/* 1. Top Navbar */}
       <Flex
-        zIndex={100}
-        position="fixed"
+        position="sticky"
         top={0}
+        zIndex={100}
         w="100%"
-        justifyContent="space-between"
+        h="60px"
         alignItems="center"
-        bg={colorMode === "dark" ? "gray.800" : "white"}
-        px={{ base: 3, md: 6 }}
-        py={{ base: 1, md: 4 }}
-        height={"60px"}
+        justifyContent="space-between"
+        px={{ base: 4, md: 8 }}
+        bg={headerBg}
+        borderBottom="1px solid"
+        borderColor={borderColor}
+        backdropFilter="blur(10px)"
       >
         <Image
           cursor="pointer"
-          alt="logo"
-          w={{ base: 5, md: 8 }}
+          alt="Threads logo"
+          w={{ base: 6, md: 7 }}
           src={colorMode === "dark" ? "/light-logo.svg" : "/dark-logo.svg"}
           onClick={toggleColorMode}
+          title="Toggle color mode"
         />
-        <Text fontSize={{ base: "md", md: "xl" }}>{currentPage}</Text>
+
         <Box>
           {user ? (
             <LogoutButton />
           ) : (
-            <Button size={{ base: "xs", md: "md" }} onClick={navigateToSignIn}>
+            <Button
+              size="sm"
+              colorScheme="blue"
+              borderRadius="full"
+              onClick={() => navigate("/auth")}
+            >
               Sign In
             </Button>
           )}
         </Box>
       </Flex>
 
-      {/* Sidebar for larger screens */}
+      {/* 2. Floating Sidebar for Desktop (Left) */}
       <VStack
-        height={"100vh"}
-        zIndex={10}
         position="fixed"
-        left={0}
-        top={0}
-        p={4}
-        spacing={6}
-        bg={colorMode === "dark" ? "gray.800" : "white"}
-        display={{ base: "none", md: "flex" }}
-        justifyContent={"center"}
+        left={4}
+        top="50%"
+        transform="translateY(-50%)"
+        zIndex={90}
+        spacing={4}
+        p={2.5}
+        bg={headerBg}
+        borderRadius="2xl"
+        border="1px solid"
+        borderColor={borderColor}
+        boxShadow="0 4px 20px rgba(0, 0, 0, 0.06)"
+        display={{ base: "none", lg: "flex" }}
       >
-        <IconButton
-          aria-label="Home"
-          icon={<BiHomeAlt2 />}
-          onClick={() => {
-            setCurrentPage("Home");
-            navigate("/");
-          }}
-          variant="ghost"
-          fontSize="32px"
-        />
-        <IconButton
-          aria-label="Chat"
-          icon={<IoChatbubbleEllipsesOutline />}
-          onClick={() => {
-            setCurrentPage("Chat");
-            navigate("/chat");
-          }}
-          variant="ghost"
-          fontSize="30px"
-        />
-        <IconButton
-          aria-label="Search"
-          icon={<IoSearchOutline />}
-          onClick={() => {
-            setCurrentPage("Search");
-            navigate("/search");
-          }}
-          variant="ghost"
-          fontSize="30px"
-        />
-        <IconButton
-          aria-label="Create Thread"
-          icon={<IoAddOutline />}
-          onClick={handleOnClick}
-          variant="ghost"
-          fontSize="35px"
-        />
-        <IconButton
-          aria-label="Notifications"
-          icon={<GoHeart />}
-          onClick={() => {
-            setCurrentPage("Notifications");
-            navigate("/activity");
-          }}
-          variant="ghost"
-          fontSize="30px"
-        />
-        <IconButton
-          aria-label="Profile"
-          icon={<FaRegUser />}
-          onClick={showUserProfile}
-          variant="ghost"
-          fontSize="25px"
-        />
+        {navItems.map((item) => {
+          const isActive = pathname === item.path;
+          return (
+            <Tooltip
+              key={item.label}
+              label={item.label}
+              placement="right"
+              hasArrow
+            >
+              <IconButton
+                aria-label={item.label}
+                icon={item.icon}
+                variant="ghost"
+                fontSize="22px"
+                borderRadius="xl"
+                color={isActive ? activeColor : inactiveColor}
+                bg={
+                  isActive
+                    ? useColorModeValue("gray.100", "gray.750")
+                    : "transparent"
+                }
+                _hover={{
+                  bg: useColorModeValue("gray.100", "gray.750"),
+                  color: activeColor,
+                }}
+                onClick={item.onClick}
+              />
+            </Tooltip>
+          );
+        })}
       </VStack>
 
-      {/* Centered Bottom Navigation for mobile */}
+      {/* 3. Bottom Navigation Bar for Mobile */}
       <HStack
-        zIndex={10}
         position="fixed"
         bottom={0}
-        left="50%"
-        transform="translateX(-50%)"
-        width="90%"
+        left={0}
+        right={0}
+        zIndex={100}
+        h="56px"
         justifyContent="space-around"
-        bg={colorMode === "dark" ? "gray.800" : "white"}
-        p={1}
-        display={{ base: "flex", md: "none" }}
         alignItems="center"
+        bg={headerBg}
+        borderTop="1px solid"
+        borderColor={borderColor}
+        display={{ base: "flex", lg: "none" }}
       >
-        <IconButton
-          aria-label="Home"
-          icon={<BiHomeAlt2 />}
-          onClick={() => {
-            setCurrentPage("Home");
-            navigate("/");
-          }}
-          variant="ghost"
-          fontSize="24px"
-        />
-        <IconButton
-          aria-label="Chat"
-          icon={<IoChatbubbleEllipsesOutline />}
-          onClick={() => {
-            setCurrentPage("Chat");
-            navigate("/chat");
-          }}
-          variant="ghost"
-          fontSize="24px"
-        />
-        <IconButton
-          aria-label="Search"
-          icon={<IoSearchOutline />}
-          onClick={() => {
-            setCurrentPage("Search");
-            navigate("/search");
-          }}
-          variant="ghost"
-          fontSize="24px"
-        />
-        <IconButton
-          aria-label="Create Thread"
-          icon={<IoAddOutline />}
-          onClick={handleOnClick}
-          variant="ghost"
-          fontSize="24px"
-        />
-        <IconButton
-          aria-label="Notifications"
-          icon={<GoHeart />}
-          onClick={() => {
-            setCurrentPage("Notifications");
-            navigate("/activity");
-          }}
-          variant="ghost"
-          fontSize="24px"
-        />
-        <IconButton
-          aria-label="Profile"
-          icon={<FaRegUser />}
-          onClick={showUserProfile}
-          variant="ghost"
-          fontSize="24px"
-        />
+        {navItems.map((item) => {
+          const isActive = pathname === item.path;
+          return (
+            <IconButton
+              key={item.label}
+              aria-label={item.label}
+              icon={item.icon}
+              variant="ghost"
+              fontSize="20px"
+              color={isActive ? activeColor : inactiveColor}
+              onClick={item.onClick}
+            />
+          );
+        })}
       </HStack>
-    </Box>
+    </>
   );
 };
 

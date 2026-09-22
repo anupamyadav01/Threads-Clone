@@ -1,27 +1,24 @@
 import jwt from "jsonwebtoken";
 
-const generateTokenAndSetCookie = (user_id, res) => {
-  try {
-    const jwtPayload = {
-      userId: user_id,
-    };
-
-    const token = jwt.sign(jwtPayload, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
-
-    res.cookie("token", token, {
-      httpOnly: true, // Prevents client-side access to the cookie
-      secure: process.env.NODE_ENV === "production", // Use HTTPS in production
-      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", // Adjust for local vs. production
-      maxAge: 3600000, // Cookie expiration time
-    });
-
-    return token;
-  } catch (error) {
-    console.error("Error generating token or setting cookie:", error);
-    throw new Error("Unable to generate token");
+const generateTokenAndSetCookie = (userId, res) => {
+  if (!process.env.JWT_SECRET) {
+    throw new Error("JWT_SECRET environment variable is missing");
   }
+
+  const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
+    expiresIn: "1h",
+  });
+
+  const isProduction = process.env.NODE_ENV === "production";
+
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax", // lowercase per RFC standard
+    maxAge: 60 * 60 * 1000, // 1 hour in ms
+  });
+
+  return token;
 };
 
 export default generateTokenAndSetCookie;

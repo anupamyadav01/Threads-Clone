@@ -19,7 +19,7 @@ import {
 import { useRef, useState } from "react";
 import { BsFillImageFill } from "react-icons/bs";
 import { useRecoilState, useRecoilValue } from "recoil";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useShowToast from "../../hooks/useShowToast";
 import userAtom from "../../atoms/userAtom";
 import usePreviewImg from "../../hooks/usePreviewImg";
@@ -31,6 +31,9 @@ const MAX_CHAR = 500;
 
 const CreatePost = () => {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const { username } = useParams();
+
   const [isOpen, setIsOpen] = useRecoilState(modalAtom);
   const [postText, setPostText] = useState("");
   const { handleImageChange, imgUrl, setImgUrl } = usePreviewImg();
@@ -40,7 +43,25 @@ const CreatePost = () => {
   const showToast = useShowToast();
   const [loading, setLoading] = useState(false);
   const [posts, setPosts] = useRecoilState(postsAtom);
-  const { username } = useParams();
+
+  // Chakra UI dynamic tokens
+  const charCounterColor = useColorModeValue("gray.500", "gray.400");
+  const modalBg = useColorModeValue("white", "gray.850");
+  const textareaBorderColor = useColorModeValue("gray.200", "gray.700");
+
+  const resetState = () => {
+    setPostText("");
+    setRemainingChar(MAX_CHAR);
+    setImgUrl("");
+    if (imageRef.current) {
+      imageRef.current.value = "";
+    }
+  };
+
+  const handleCloseModal = () => {
+    resetState();
+    setIsOpen(false);
+  };
 
   const handleTextChange = (e) => {
     const inputText = e.target.value;
@@ -53,36 +74,43 @@ const CreatePost = () => {
     }
   };
 
+  const handleRemoveImage = () => {
+    setImgUrl("");
+    if (imageRef.current) {
+      imageRef.current.value = "";
+    }
+  };
+
   const handleCreatePost = async () => {
+    if (!postText.trim() && !imgUrl) {
+      showToast("Error", "Please add some text or an image", "error");
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await axiosInstance.post("/post/create", {
-        postedBy: user._id,
-        content: postText,
+        content: postText.trim(),
         img: imgUrl,
       });
 
-      const data = res.data;
-      console.log(data);
-
-      if (data.error) {
-        showToast("Error", data.error, "error");
-        return;
-      }
+      // Backend returns either res.data.data or res.data
+      const newCreatedPost = res.data?.data || res.data;
 
       showToast("Success", "Post created successfully", "success");
 
-      if (username === user.username) {
-        setPosts([data, ...posts]);
+      // Update feed when on home ("/") or on the user's own profile page
+      if (pathname === "/" || username === user?.username) {
+        setPosts((prevPosts) => [newCreatedPost, ...(prevPosts || [])]);
       }
 
-      setIsOpen(false);
-      setPostText("");
-      setImgUrl("");
+      handleCloseModal();
       navigate("/");
     } catch (error) {
       const errorMessage =
-        error.response?.data?.message || "Something went wrong!";
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Something went wrong!";
       showToast("Error", errorMessage, "error");
     } finally {
       setLoading(false);
@@ -90,82 +118,117 @@ const CreatePost = () => {
   };
 
   return (
-    <>
-      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-        <ModalOverlay />
-        <ModalContent
-          maxW={{ base: "90%", sm: "100%", md: "600px" }}
-          height="auto"
-          p={{ base: 3, md: 5 }}
-        >
-          <ModalHeader fontSize={{ base: "lg", md: "xl" }}>
-            Create Post
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <FormControl>
-              <Textarea
-                placeholder="Post content goes here.."
-                onChange={handleTextChange}
-                value={postText}
-                fontSize={{ base: "sm", md: "md" }}
-              />
-              <Text
-                fontSize="xs"
-                fontWeight="bold"
-                textAlign={"right"}
-                m={"1"}
-                color={useColorModeValue("gray.800", "gray.100")}
-              >
-                {remainingChar}/{MAX_CHAR}
-              </Text>
+    <Modal isOpen={isOpen} onClose={handleCloseModal} isCentered>
+      <ModalOverlay backdropFilter="blur(4px)" />
+      <ModalContent
+        bg={modalBg}
+        maxW={{ base: "90%", sm: "520px" }}
+        borderRadius="2xl"
+        p={2}
+      >
+        <ModalHeader fontSize={{ base: "md", md: "lg" }} fontWeight="bold">
+          Create Post
+        </ModalHeader>
+        <ModalCloseButton />
 
-              <Input
-                type="file"
-                hidden
-                ref={imageRef}
-                onChange={handleImageChange}
-              />
+        <ModalBody pb={4}>
+          <FormControl>
+            <Textarea
+              placeholder="What's on your mind?..."
+              onChange={handleTextChange}
+              value={postText}
+              fontSize="sm"
+              borderRadius="xl"
+              borderColor={textareaBorderColor}
+              minH="120px"
+              resize="none"
+              _focus={{
+                borderColor: "blue.500",
+                boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)",
+              }}
+            />
 
-              <BsFillImageFill
-                style={{ marginLeft: "5px", cursor: "pointer" }}
-                size={16}
-                onClick={() => imageRef.current.click()}
-              />
-            </FormControl>
-            {imgUrl && (
-              <Flex mt={5} w="full" position="relative" justifyContent="center">
-                <Image
-                  src={imgUrl}
-                  alt="Selected image"
-                  objectFit="cover"
-                  width="100%"
-                  maxH={{ base: "200px", md: "300px" }}
-                  borderRadius="md"
+            <Flex justify="space-between" align="center" mt={2} px={1}>
+              {/* Image upload trigger */}
+              <Flex align="center" gap={2}>
+                <Input
+                  type="file"
+                  hidden
+                  ref={imageRef}
+                  accept="image/*"
+                  onChange={handleImageChange}
                 />
-                <CloseButton
-                  onClick={() => setImgUrl("")}
-                  bg={"gray.800"}
-                  position={"absolute"}
-                  top={2}
-                  right={2}
+                <BsFillImageFill
+                  style={{ cursor: "pointer" }}
+                  size={18}
+                  color="#718096"
+                  onClick={() => imageRef.current?.click()}
+                  title="Attach image"
                 />
               </Flex>
-            )}
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              colorScheme="blue"
-              mr={3}
-              onClick={handleCreatePost}
-              isLoading={loading}
+
+              {/* Character limit counter */}
+              <Text fontSize="xs" fontWeight="medium" color={charCounterColor}>
+                {remainingChar}/{MAX_CHAR}
+              </Text>
+            </Flex>
+          </FormControl>
+
+          {/* Image Preview */}
+          {imgUrl && (
+            <Flex
+              mt={4}
+              w="full"
+              position="relative"
+              borderRadius="xl"
+              overflow="hidden"
+              border="1px solid"
+              borderColor={textareaBorderColor}
             >
-              Post
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    </>
+              <Image
+                src={imgUrl}
+                alt="Selected image preview"
+                objectFit="cover"
+                width="100%"
+                maxH="280px"
+              />
+              <CloseButton
+                onClick={handleRemoveImage}
+                position="absolute"
+                top={2}
+                right={2}
+                bg="blackAlpha.700"
+                color="white"
+                borderRadius="full"
+                size="sm"
+                _hover={{ bg: "blackAlpha.900" }}
+              />
+            </Flex>
+          )}
+        </ModalBody>
+
+        <ModalFooter gap={2} pt={0}>
+          <Button
+            variant="ghost"
+            borderRadius="full"
+            size="sm"
+            onClick={handleCloseModal}
+          >
+            Cancel
+          </Button>
+          <Button
+            colorScheme="blue"
+            borderRadius="full"
+            size="sm"
+            onClick={handleCreatePost}
+            isLoading={loading}
+            isDisabled={!postText.trim() && !imgUrl}
+          >
+            Post
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
   );
 };
 

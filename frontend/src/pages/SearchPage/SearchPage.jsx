@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 import { useState, useEffect } from "react";
 import {
   Box,
@@ -7,197 +6,178 @@ import {
   Text,
   VStack,
   HStack,
-  useColorMode,
-  Spinner,
-  Alert,
-  AlertIcon,
   Flex,
+  InputGroup,
+  InputLeftElement,
+  InputRightElement,
+  IconButton,
+  Spinner,
+  useColorModeValue,
+  Center,
 } from "@chakra-ui/react";
-import { IoIosSearch } from "react-icons/io";
-import { CheckCircleIcon } from "@chakra-ui/icons";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { SearchIcon, CloseIcon } from "@chakra-ui/icons";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../../axiosConfig";
+import SuggestedUser from "../../components/SuggestedUser";
 
 const SearchPage = () => {
-  const { colorMode } = useColorMode();
   const [searchQuery, setSearchQuery] = useState("");
-  const [users, setUsers] = useState([]); // State to store fetched users
-  const [loading, setLoading] = useState(false); // Loading state
-  const [error, setError] = useState(null); // Error state
-  const navigate = useNavigate(); // Initialize useNavigate
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  // Function to fetch users based on search input
-  const fetchUsers = async (query) => {
-    try {
-      setLoading(true);
-      setError(null); // Reset error state
+  // Modern UI theme tokens
+  const cardBg = useColorModeValue("white", "gray.850");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const inputBg = useColorModeValue("gray.50", "gray.800");
+  const primaryText = useColorModeValue("gray.900", "gray.100");
+  const secondaryText = useColorModeValue("gray.500", "gray.400");
+  const hoverBg = useColorModeValue("gray.50", "whiteAlpha.50");
 
-      // Make an API call to search users by name or username
-      const response = await axiosInstance.get(`/user/search`, {
-        params: { query },
-      });
-
-      // Update users state with the data from the backend
-      setUsers(response.data);
-      setLoading(false);
-    } catch (err) {
-      console.log("error from search page", err);
-      setLoading(false);
-      setError("Failed to fetch users. Please try again.");
-    }
-  };
-
-  // Fetch users when searchQuery changes
+  // Debounced search with AbortController to handle race conditions
   useEffect(() => {
-    if (searchQuery.length > 0) {
-      fetchUsers(searchQuery);
-    } else {
-      setUsers([]); // Clear users if search query is empty
+    if (!searchQuery.trim()) {
+      setUsers([]);
+      setLoading(false);
+      setError(null);
+      return;
     }
+
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await axiosInstance.get(`/user/search`, {
+          params: { query: searchQuery.trim() },
+          signal: controller.signal,
+        });
+
+        const fetchedData = response?.data?.users || response?.data || [];
+        setUsers(Array.isArray(fetchedData) ? fetchedData : []);
+      } catch (err) {
+        if (err.name === "CanceledError" || err.name === "AbortError") return;
+        setError("Failed to search users. Please try again.");
+        setUsers([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 350); // 350ms debounce window
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [searchQuery]);
 
   return (
-    <Flex
-      direction="column"
-      justify="center"
-      align="center"
-      minHeight="100vh"
-      p={4}
+    <Box
+      w="100%"
+      maxW="620px"
+      mx="auto"
+      mt={{ base: 4, md: 8 }}
+      px={{ base: 3, md: 4 }}
+      pb={16}
     >
       <Box
-        px={8}
-        py={8}
-        bg={colorMode === "dark" ? "gray.700" : "white"}
-        color={colorMode === "dark" ? "gray.300" : "gray.600"}
-        maxW={["full", "600px"]} // Full width on small screens, 600px on larger
-        w="100%"
-        borderRadius="lg"
+        bg={cardBg}
+        borderRadius="2xl"
+        border="1px solid"
+        borderColor={borderColor}
+        p={{ base: 4, md: 6 }}
+        boxShadow="0 20px 40px -15px rgba(0, 0, 0, 0.05)"
       >
-        {users.length === 0 && !loading && searchQuery.length === 0 && (
-          <Text fontSize={"xl"} textAlign={"center"} pb={8}>
-            Search for users by name or username.
-          </Text>
-        )}
-        {/* Search Bar */}
-        <Box mb={4}>
-          <HStack position="relative">
-            {/* Icon Box */}
-            <Box
-              position="absolute"
-              left={3}
-              top="50%"
-              transform="translateY(-50%)"
-            >
-              <IoIosSearch fontSize="30px" color="gray" />
-            </Box>
-
-            {/* Input Box */}
-            <Input
-              placeholder="Search"
-              pl="50px"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              size="lg"
-            />
-          </HStack>
-        </Box>
-
-        {/* Error Handling */}
-        {error && (
-          <Alert status="error" mb={4}>
-            <AlertIcon />
-            {error}
-          </Alert>
-        )}
-
-        {/* Loading State */}
-        {loading && (
-          <Box textAlign="center" mt={4}>
-            <Spinner size="lg" />
-          </Box>
-        )}
-
-        {/* User List */}
-        <VStack
-          align="start"
-          spacing={4}
-          bg={colorMode === "dark" ? "gray.700" : "white"}
-          color={colorMode === "dark" ? "gray.300" : "gray.600"}
-          maxHeight={users.length > 4 ? "300px" : "none"}
-          overflowY={users.length > 4 ? "auto" : "none"}
-          p={2}
-          borderRadius="md"
-          boxShadow="sm"
-          sx={{
-            // Custom scrollbar styling
-            "&::-webkit-scrollbar": {
-              width: "12px", // Wider scrollbar
-              height: "12px", // For horizontal scrollbar
-            },
-            "&::-webkit-scrollbar-thumb": {
-              backgroundColor: colorMode === "dark" ? "#4A5568" : "#CBD5E0", // Thumb color (dark/light mode)
-              borderRadius: "6px", // Rounded thumb edges
-              border: "3px solid transparent", // Space between thumb and track
-              backgroundClip: "content-box", // Thumb outline to create a more distinct look
-            },
-            "&::-webkit-scrollbar-thumb:hover": {
-              backgroundColor: colorMode === "dark" ? "#2D3748" : "#A0AEC0", // Thumb color on hover
-            },
-            "&::-webkit-scrollbar-track": {
-              backgroundColor: colorMode === "dark" ? "#2D3748" : "#E2E8F0", // Track background
-              borderRadius: "6px", // Rounded track edges
-            },
-            "&::-webkit-scrollbar-corner": {
-              backgroundColor: "transparent", // Transparent corner when both scrollbars appear
-            },
-          }}
+        <Text
+          fontSize="2xl"
+          fontWeight="700"
+          letterSpacing="-0.02em"
+          color={primaryText}
+          mb={4}
         >
-          {users?.length === 0 && !loading && searchQuery && (
-            <Text>No users found for "{searchQuery}".</Text>
-          )}
+          Search
+        </Text>
 
-          {users.map((user, index) => (
-            <HStack
-              key={index}
-              justify="space-between"
-              w="full"
-              p={2}
-              borderRadius="md"
-              _hover={{ bg: "gray.600" }}
-              cursor="pointer"
-              onClick={() => navigate(`/${user.username}`)} // Navigate to user's page
-              direction={["column", "row"]} // Stack vertically on small screens, horizontally on larger ones
-            >
-              <HStack
-                spacing={4}
-                direction={["column", "row"]} // Stack avatar and text vertically on small screens
-                align={["center", "start"]} // Center align on small screens, start align on larger ones
-                w="full"
-              >
-                <Avatar
-                  src={user?.profilePic}
-                  size={["lg", "md"]} // Larger avatar on small screens, smaller on larger ones
-                />
-                <Box textAlign={["center", "left"]}>
-                  {" "}
-                  {/* Center text on small screens */}
-                  <HStack justify={["center", "start"]}>
-                    <Text fontWeight="bold">{user?.username}</Text>
-                    <CheckCircleIcon color="blue.500" boxSize={4} />
-                  </HStack>
-                  <Text fontSize="sm" color="gray.500">
-                    {user?.name}
-                  </Text>
-                  <Text fontSize="sm" color="gray.500">
-                    {user?.followers.length} followers
-                  </Text>
-                </Box>
-              </HStack>
-            </HStack>
-          ))}
-        </VStack>
+        {/* Search Input Bar */}
+        <InputGroup size="md" mb={4}>
+          <InputLeftElement pointerEvents="none">
+            <SearchIcon color="gray.400" boxSize={3.5} />
+          </InputLeftElement>
+          <Input
+            placeholder="Search by name or username..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            bg={inputBg}
+            borderRadius="xl"
+            borderColor={borderColor}
+            fontSize="sm"
+            h="44px"
+            _focus={{
+              borderColor: "blue.500",
+              boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)",
+            }}
+          />
+          {searchQuery && (
+            <InputRightElement h="44px">
+              <IconButton
+                size="xs"
+                variant="ghost"
+                aria-label="Clear search"
+                icon={<CloseIcon boxSize={2} />}
+                onClick={() => setSearchQuery("")}
+              />
+            </InputRightElement>
+          )}
+        </InputGroup>
+
+        {/* Loading Spinner */}
+        {loading && (
+          <Center py={8}>
+            <Spinner size="md" thickness="3px" speed="0.65s" color="blue.500" />
+          </Center>
+        )}
+
+        {/* Error Feedback */}
+        {error && !loading && (
+          <Center py={4}>
+            <Text fontSize="sm" color="red.500">
+              {error}
+            </Text>
+          </Center>
+        )}
+
+        {/* Results List */}
+        {!loading && users.length > 0 && (
+          <VStack spacing={1} align="stretch" mt={2}>
+            {users.map((user) => (
+              <SuggestedUser key={user._id} user={user} />
+            ))}
+          </VStack>
+        )}
+
+        {/* Empty State: No Query */}
+        {!loading && !searchQuery.trim() && (
+          <Center py={12} flexDirection="column" gap={1}>
+            <Text fontSize="sm" fontWeight="medium" color={secondaryText}>
+              Find people on Threads
+            </Text>
+            <Text fontSize="xs" color={secondaryText}>
+              Search for creators, friends, and accounts by username or name.
+            </Text>
+          </Center>
+        )}
+
+        {/* Empty State: Query without Results */}
+        {!loading && searchQuery.trim() && users.length === 0 && !error && (
+          <Center py={10}>
+            <Text fontSize="sm" color={secondaryText}>
+              No users found for &quot;{searchQuery}&quot;
+            </Text>
+          </Center>
+        )}
       </Box>
-    </Flex>
+    </Box>
   );
 };
 

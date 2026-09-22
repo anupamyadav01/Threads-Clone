@@ -17,62 +17,53 @@ const App = () => {
   const user = useRecoilValue(userAtom);
   const { pathname } = useLocation();
 
+  // Determine dynamic container widths per route type
+  const getContainerMaxWidth = () => {
+    if (pathname === "/chat") return { base: "100%", md: "1150px" };
+    if (pathname === "/") return { base: "700px", md: "950px" };
+    return "700px";
+  };
+
+  const isChatRoute = pathname === "/chat";
+
   return (
-    <>
+    <Box minHeight="100vh" position="relative" pb={isChatRoute ? 0 : 8}>
       <Header />
-      <Box
-        width="full"
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="100vh"
+      <Container
+        maxW={getContainerMaxWidth()}
+        px={isChatRoute ? { base: 2, md: 4 } : 4}
       >
-        <Container
-          maxW={pathname === "/" ? { base: "700px", md: "950px" } : "700px"}
-        >
-          <Box
-            width="100%"
-            h="100%"
-            overflowY="scroll"
-            sx={{
-              "&::-webkit-scrollbar": {
-                display: "none",
-              },
-            }}
-          >
-            <Routes>
-              <Route
-                path="/"
-                element={user ? <HomePage /> : <Navigate to="/auth" />}
-              />
-              <Route
-                path="/auth"
-                element={!user ? <AuthPage /> : <Navigate to="/" />}
-              />
-              <Route
-                path="/update"
-                element={user ? <UpdateProfilePage /> : <Navigate to="/auth" />}
-              />
-              <Route path="/search" element={<SearchPage />} />
-              <Route
-                path="/create"
-                element={user ? <CreatePost /> : <Navigate to="/auth" />}
-              />
-              <Route path="/:username" element={<UserPage />} />
-              <Route path="/:username/post/:postId" element={<PostDetails />} />
-              <Route
-                path="/activity"
-                element={user ? <Activity /> : <Navigate to="/auth" />}
-              />
-              <Route
-                path="/chat"
-                element={user ? <ChatPage /> : <Navigate to="/auth" />}
-              />
-            </Routes>
-          </Box>
-        </Container>
-      </Box>
-    </>
+        <Routes>
+          <Route
+            path="/"
+            element={user ? <HomePage /> : <Navigate to="/auth" />}
+          />
+          <Route
+            path="/auth"
+            element={!user ? <AuthPage /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/update"
+            element={user ? <UpdateProfilePage /> : <Navigate to="/auth" />}
+          />
+          <Route path="/search" element={<SearchPage />} />
+          <Route
+            path="/create"
+            element={user ? <CreatePost /> : <Navigate to="/auth" />}
+          />
+          <Route path="/:username" element={<UserPage />} />
+          <Route path="/:username/post/:postId" element={<PostDetails />} />
+          <Route
+            path="/activity"
+            element={user ? <Activity /> : <Navigate to="/auth" />}
+          />
+          <Route
+            path="/chat"
+            element={user ? <ChatPage /> : <Navigate to="/auth" />}
+          />
+        </Routes>
+      </Container>
+    </Box>
   );
 };
 

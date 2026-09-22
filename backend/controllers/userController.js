@@ -7,46 +7,48 @@ import mongoose, { Mongoose } from "mongoose";
 
 export const signup = async (req, res) => {
   try {
-    const { name, email, password, username } = req.body.inputs;
+    const { name, email, password, username } = req.body.inputs || req.body;
+
+    // 1. Validate required fields
     if (!name || !email || !password || !username) {
       return res.status(400).json({ message: "Please enter all fields" });
     }
-    // checking if user already exists
-    const isEmailExist = await UserModel.findOne({ email });
-    if (isEmailExist) {
-      return res.status(400).json({ message: "User already exists" });
+
+    // 2. Check if username or email already exists in a single query
+    const existingUser = await UserModel.findOne({
+      $or: [{ email: email.toLowerCase() }, { username }],
+    });
+
+    if (existingUser) {
+      const field =
+        existingUser.email === email.toLowerCase() ? "Email" : "Username";
+      return res.status(409).json({ message: `${field} already exists` });
     }
 
-    const isUsernameExist = await UserModel.findOne({ username });
-    if (isUsernameExist) {
-      return res.status(400).json({ message: "Username already exists" });
-    }
-
+    // 3. Hash password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-    const userData = {
+
+    // 4. Create user
+    const newUser = await UserModel.create({
       name,
       username,
-      email,
+      email: email.toLowerCase(),
       password: hashedPassword,
-    };
-    const newlyCreatedUser = await UserModel.create(userData);
+    });
 
-    if (newlyCreatedUser) {
-      return res.status(201).json({
-        message: "User created successfully",
-        user: newlyCreatedUser,
-      });
-    } else {
-      return res
-        .status(500)
-        .json({ message: "Failed to create user, try again" });
-    }
+    // 5. Omit password from response
+    const userResponse = newUser.toObject();
+    delete userResponse.password;
+
+    return res.status(201).json({
+      message: "User created successfully",
+      user: userResponse,
+    });
   } catch (error) {
-    console.log("Error in Register User", error.message);
+    console.error("Error in Register User:", error.message);
     return res.status(500).json({
-      message: "Failed to create user, try again",
-      error: error.message,
+      message: "Internal server error, please try again later",
     });
   }
 };
@@ -74,7 +76,7 @@ export const login = async (req, res) => {
     // checking if password is correct or not
     const isPasswordCorrect = await bcrypt.compare(
       password,
-      existingUser.password
+      existingUser.password,
     );
     if (!isPasswordCorrect) {
       return res
@@ -171,7 +173,7 @@ export const forgotPassword = async (req, res) => {
       const updatedUser = await UserModel.findOneAndUpdate(
         { email },
         { $set: { otp } },
-        { new: true }
+        { new: true },
       );
       if (updatedUser) {
         return res.status(200).json({
@@ -222,7 +224,7 @@ export const resetPassword = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     const checkUser = await UserModel.findOneAndUpdate(
       { email },
-      { $set: { password: hashedPassword } }
+      { $set: { password: hashedPassword } },
     );
     if (checkUser) {
       res.status(201).send({
@@ -297,7 +299,7 @@ export const followUnFollowUser = async (req, res) => {
     }
     // checking if user is already followed
     const isAlreadyFollowing = currentUser.following.find(
-      (userId) => userId.toString() === queryId.toString()
+      (userId) => userId.toString() === queryId.toString(),
     );
     const updatedQueryId = new mongoose.Types.ObjectId(queryId);
 
@@ -312,7 +314,7 @@ export const followUnFollowUser = async (req, res) => {
         },
         {
           new: true,
-        }
+        },
       );
 
       // now removing current user from followers list of that user.
@@ -323,7 +325,7 @@ export const followUnFollowUser = async (req, res) => {
         },
         {
           new: true,
-        }
+        },
       );
 
       res.status(200).json({
@@ -348,7 +350,7 @@ export const followUnFollowUser = async (req, res) => {
         },
         {
           new: true,
-        }
+        },
       );
       res.status(200).json({
         success: true,
@@ -457,8 +459,8 @@ export const getSuggestedUsers = async (req, res) => {
       (suggestedUser) =>
         !usersFollowedByMe.some(
           (followedUserId) =>
-            followedUserId.toString() === suggestedUser._id.toString()
-        )
+            followedUserId.toString() === suggestedUser._id.toString(),
+        ),
     );
 
     // Return the filtered list of suggested users

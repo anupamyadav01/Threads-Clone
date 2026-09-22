@@ -21,7 +21,7 @@ export const uploadToCloudinary = async (req, res, next) => {
     // If user already has an image, destroy the old one
     if (req?.user && req.user.img) {
       await cloudinary.uploader.destroy(
-        req.user.img.split("/").pop().split(".")[0]
+        req.user.img.split("/").pop().split(".")[0],
       );
     }
 

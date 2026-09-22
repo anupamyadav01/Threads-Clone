@@ -3,47 +3,48 @@ import PostModel from "../models/postModel.js";
 import UserModel from "../models/userModel.js";
 
 export const createPost = async (req, res) => {
-  const currentUser = req.user;
   try {
-    const { postedBy, content, img } = req.body;
-    if (!postedBy || !content) {
-      return res
-        .status(400)
-        .json({ message: "Invalid input: postedBy or content missing" });
+    const { content } = req.body;
+    const userId = req.user?._id;
+
+    // 1. Guard against missing user context
+    if (!userId) {
+      return res.status(401).json({ message: "Authentication required" });
     }
 
-    if (currentUser._id.toString() !== postedBy.toString()) {
-      return res.status(401).json({
-        message: "Unauthorized: You can only create posts for yourself",
-      });
+    // 2. Validate content presence and length
+    if (!content || !content.trim()) {
+      return res.status(400).json({ message: "Content cannot be empty" });
     }
 
     const maxLength = 500;
-    if (content.length > maxLength) {
-      return res
-        .status(400)
-        .json({ message: `Content must be less than ${maxLength} characters` });
+    if (content.trim().length > maxLength) {
+      return res.status(400).json({
+        message: `Content must be less than ${maxLength} characters`,
+      });
     }
-    // const updatedPostedBy = new mongoose.Types.ObjectId(postedBy);
-    const postObj = {
-      postedBy: new mongoose.Types.ObjectId(postedBy),
-      content,
-      img: req.secure_url || img,
+
+    // 3. Construct post data (uses req.secure_url from Cloudinary middleware if available)
+    const postData = {
+      postedBy: userId,
+      content: content.trim(),
+      ...(req.secure_url && { img: req.secure_url }),
     };
 
-    const newPost = await PostModel.create(postObj);
-
-    const populatedPost = await newPost.populate("postedBy");
+    // 4. Create and populate while excluding private credentials
+    const newPost = await PostModel.create(postData);
+    const populatedPost = await newPost.populate(
+      "postedBy",
+      "name username img",
+    );
 
     return res.status(201).json({
       message: "Post created successfully",
       data: populatedPost,
     });
   } catch (error) {
-    console.log("Error from createPost:", error);
-    res
-      .status(500)
-      .json({ message: "Internal Server Error", error: error.message });
+    console.error("Error from createPost:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -141,14 +142,14 @@ export const likeUnlikePost = async (req, res) => {
       // Unlike the post by removing the user's ID from the likes array
       await PostModel.updateOne(
         { _id: postId },
-        { $pull: { likes: currentUser._id } }
+        { $pull: { likes: currentUser._id } },
       );
       return res.status(200).json({
         message: "Post unliked successfully",
         data: {
           ...post.toObject(),
           likes: post.likes.filter(
-            (id) => id.toString() !== currentUser._id.toString()
+            (id) => id.toString() !== currentUser._id.toString(),
           ),
         },
       });
@@ -156,7 +157,7 @@ export const likeUnlikePost = async (req, res) => {
       // Like the post by adding the user's ID to the likes array
       await PostModel.updateOne(
         { _id: postId },
-        { $push: { likes: currentUser._id } }
+        { $push: { likes: currentUser._id } },
       );
       return res.status(200).json({
         message: "Post liked successfully",
@@ -196,7 +197,7 @@ export const replyToPost = async (req, res) => {
     const updatedPost = await PostModel.findByIdAndUpdate(
       postId,
       { $push: { replies: reply } },
-      { new: true }
+      { new: true },
     ).populate({
       path: "replies.userId", // Populate the userId inside replies
       select: "username profilePic", // Select only the fields you need
