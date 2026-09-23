@@ -1,5 +1,7 @@
 import { Box, Flex, Skeleton, SkeletonCircle, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+import { useRecoilValue } from "recoil";
+import userAtom from "../atoms/userAtom"; // Adjust relative path to atoms if needed
 import useShowToast from "../hooks/useShowToast";
 import axiosInstance from "../../axiosConfig";
 import SuggestedUser from "./SuggestedUserCard";
@@ -9,12 +11,22 @@ const SuggestedUsers = () => {
   const [suggestedUsers, setSuggestedUsers] = useState([]);
   const showToast = useShowToast();
 
+  // Get current logged-in user from Recoil
+  const currentUser = useRecoilValue(userAtom);
+
   useEffect(() => {
+    if (!currentUser) {
+      setLoading(false);
+      return;
+    }
+
     const getSuggestedUsers = async () => {
       setLoading(true);
       try {
-        const res = await axiosInstance.get("/user/suggestedUsers");
-        setSuggestedUsers(res?.data?.suggestedUsers);
+        const res = await axiosInstance.get("/user/suggestedUsers", {
+          withCredentials: true,
+        });
+        setSuggestedUsers(res?.data?.suggestedUsers || []);
       } catch (error) {
         showToast("Error", error.message, "error");
       } finally {
@@ -23,7 +35,10 @@ const SuggestedUsers = () => {
     };
 
     getSuggestedUsers();
-  }, [showToast]);
+  }, [currentUser, showToast]);
+
+  // 2. Hide component completely if user is not logged in
+  if (!currentUser) return null;
 
   return (
     <>

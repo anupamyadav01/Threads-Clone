@@ -12,6 +12,7 @@ import CreatePost from "./components/Post/CreatePost";
 import SearchPage from "./pages/SearchPage/SearchPage";
 import ChatPage from "./pages/ChatPage/ChatPage";
 import Activity from "./pages/Activity/Activity";
+import FollowingPage from "./pages/HomePage/FollowingPage";
 
 const App = () => {
   const user = useRecoilValue(userAtom);
@@ -42,6 +43,10 @@ const App = () => {
           <Route
             path="/update"
             element={user ? <UpdateProfilePage /> : <Navigate to="/auth" />}
+          />{" "}
+          <Route
+            path="/following"
+            element={user ? <FollowingPage /> : <Navigate to="/auth" />}
           />
           <Route path="/search" element={<SearchPage />} />
           <Route

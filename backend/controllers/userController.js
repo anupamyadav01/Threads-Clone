@@ -464,6 +464,7 @@ export const freezeAccount = async (req, res) => {};
 export const getSuggestedUsers = async (req, res) => {
   try {
     const currentUser = req.user;
+    // console.log("getSuggestedUsers", currentUser);
 
     const users = await UserModel.find({
       _id: {

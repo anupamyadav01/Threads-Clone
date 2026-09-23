@@ -6,6 +6,7 @@ import {
   createPost,
   deletePostById,
   getFeeds,
+  getFollowingFeed,
   getPostById,
   getPostsByUsername,
   likeUnlikePost,
@@ -16,6 +17,8 @@ import uploadToCloudinary from "../middlewares/cloudniaryUpload.js";
 import optionalAuth from "../middlewares/optionalAuth.js";
 
 postRoutes.get("/feeds", optionalAuth, getFeeds);
+
+postRoutes.get("/following", getUserDetails, getFollowingFeed);
 
 postRoutes.get("/user/:username", getPostsByUsername);
 

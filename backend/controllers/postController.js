@@ -228,37 +228,65 @@ export const replyToPost = async (req, res) => {
   }
 };
 
+export const getFollowingFeed = async (req, res) => {
+  try {
+    // req.user is set by your getUserDetails middleware
+    const userId = req.user._id;
+
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const following = user.following || [];
+
+    // If the user isn't following anyone, return empty array immediately
+    if (following.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    // Find all posts created by people in the following list
+    const feedPosts = await PostModel.find({ postedBy: { $in: following } })
+      .sort({ createdAt: -1 })
+      .populate("postedBy", "username name profilePic");
+
+    return res.status(200).json(feedPosts);
+  } catch (error) {
+    console.error("Error in getFollowingFeed:", error.message);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 export const getFeeds = async (req, res) => {
   try {
     // User is logged in
     if (req.user) {
-      const following = req.user.following;
+      const following = req.user.following || [];
+      const currentUserId = req.user._id;
 
-      // If user is not following anyone
-      if (!following || following.length === 0) {
-        return res.status(200).json({
-          message: "No posts to show",
-          data: [],
-        });
-      }
+      // Exclude both:
+      // 1. People the user already follows
+      // 2. The user's own account
+      const excludedUsers = [...following, currentUserId];
 
-      const feedPosts = await PostModel.find({
-        postedBy: { $in: following },
+      const explorePosts = await PostModel.find({
+        postedBy: { $nin: excludedUsers },
       })
-        .populate("postedBy")
-        .sort({ createdAt: -1 });
+        .populate("postedBy", "-password")
+        .sort({ createdAt: -1 })
+        .limit(30);
 
       return res.status(200).json({
-        message: "Posts fetched successfully",
-        data: feedPosts,
+        message: "Explore feed fetched successfully",
+        data: explorePosts,
       });
     }
 
-    // User is NOT logged in
+    // User is NOT logged in (general public feed)
     const publicPosts = await PostModel.find({})
-      .populate("postedBy")
+      .populate("postedBy", "-password")
       .sort({ createdAt: -1 })
-      .limit(20);
+      .limit(30);
 
     return res.status(200).json({
       message: "Public posts fetched successfully",

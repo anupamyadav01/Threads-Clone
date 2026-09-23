@@ -18,6 +18,7 @@ import userAtom from "../../atoms/userAtom";
 import SuggestedUsers from "../../components/SuggestedUsersList";
 
 const HomePage = () => {
+  const user = useRecoilValue(userAtom);
   const [posts, setPosts] = useRecoilState(postsAtom);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -37,7 +38,6 @@ const HomePage = () => {
       setError(null);
 
       try {
-        // Query feed (handles public feed if unauthenticated)
         const response = await axiosInstance.get("/post/feeds", {
           signal: controller.signal,
         });
@@ -163,14 +163,13 @@ const HomePage = () => {
         position="sticky"
         top="80px"
       >
-        {currentUser ? (
+        {user ? (
           <SuggestedUsers />
         ) : (
           /* Card for guest / logged-out visitors */
           <Box
             p={5}
             bg={cardBg}
-            border="1px solid"
             borderColor={borderColor}
             borderRadius="2xl"
             textAlign="center"

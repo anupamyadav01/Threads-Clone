@@ -9,7 +9,6 @@ import {
   IconButton,
   Button,
   Tooltip,
-  Text,
 } from "@chakra-ui/react";
 
 import { GoHeart, GoHeartFill } from "react-icons/go";
@@ -79,7 +78,7 @@ const Header = () => {
     }
   };
 
-  // Main sidebar navigation
+  // Main sidebar navigation items
   const navItems = [
     {
       label: "Home",
@@ -167,7 +166,6 @@ const Header = () => {
         borderBottom="1px solid"
         borderColor={borderColor}
         backdropFilter="blur(16px)"
-        WebkitBackdropFilter="blur(16px)"
       >
         {/* =========================
             LEFT - LOGO
@@ -244,7 +242,7 @@ const Header = () => {
       </Flex>
 
       {/* =========================
-          DESKTOP SIDEBAR
+          DESKTOP SIDEBAR (lg and up)
       ========================= */}
       <VStack
         position="fixed"
@@ -260,7 +258,6 @@ const Header = () => {
         borderColor={borderColor}
         boxShadow="0 4px 20px rgba(0, 0, 0, 0.06)"
         backdropFilter="blur(16px)"
-        WebkitBackdropFilter="blur(16px)"
         display={{ base: "none", lg: "flex" }}
       >
         {navItems.map((item) => {
@@ -291,6 +288,48 @@ const Header = () => {
           );
         })}
       </VStack>
+
+      {/* =========================
+          MOBILE BOTTOM BAR (below lg)
+      ========================= */}
+      <Flex
+        position="fixed"
+        bottom={0}
+        left={0}
+        right={0}
+        zIndex={90}
+        h="56px"
+        bg={headerBg}
+        borderTop="1px solid"
+        borderColor={borderColor}
+        backdropFilter="blur(16px)"
+        alignItems="center"
+        justifyContent="space-around"
+        px={2}
+        display={{ base: "flex", lg: "none" }}
+      >
+        {navItems.map((item) => {
+          const isActive = pathname === item.path;
+
+          return (
+            <IconButton
+              key={item.label}
+              aria-label={item.label}
+              icon={item.icon}
+              variant="ghost"
+              fontSize="22px"
+              borderRadius="xl"
+              color={isActive ? activeColor : inactiveColor}
+              bg={isActive ? activeBg : "transparent"}
+              _hover={{
+                bg: hoverBg,
+                color: activeColor,
+              }}
+              onClick={item.onClick}
+            />
+          );
+        })}
+      </Flex>
     </>
   );
 };
